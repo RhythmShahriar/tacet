@@ -128,6 +128,9 @@ func deny(reason string) any {
 }
 
 func sessionStart(root string, cfg *config.Config, in *hookInput) any {
+	if cfg.On("map") {
+		refreshMap(root)
+	}
 	var parts []string
 	if n := takeNotice(root); n != "" {
 		parts = append(parts, n)
