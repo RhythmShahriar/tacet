@@ -121,7 +121,8 @@ var preferred = []string{"build", "dev", "test", "lint", "typecheck", "check", "
 var makeDescRe = regexp.MustCompile(`(?m)^([A-Za-z0-9][A-Za-z0-9_.\-]*)\s*:[^=\n]*##\s*(.+)$`)
 
 // Commands detects the project's commands from its Makefile, justfile,
-// package.json, go.mod or Cargo.toml, at most MaxCommands of them.
+// package.json, go.mod, Cargo.toml or pyproject.toml, at most MaxCommands
+// of them.
 func Commands(root string) []Command {
 	targets := lint.Targets(root)
 	read := func(name string) string {
@@ -165,12 +166,7 @@ func Commands(root string) []Command {
 			}
 		}
 	}
-	if len(out) == 0 && read("go.mod") != "" {
-		out = append(out, Command{Run: "go build ./..."}, Command{Run: "go test ./..."}, Command{Run: "go vet ./..."})
-	}
-	if len(out) == 0 && read("Cargo.toml") != "" {
-		out = append(out, Command{Run: "cargo build"}, Command{Run: "cargo test"}, Command{Run: "cargo clippy"})
-	}
+	out = append(out, langCommands(root, out)...)
 	if len(out) > MaxCommands {
 		out = out[:MaxCommands]
 	}

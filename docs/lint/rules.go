@@ -30,6 +30,7 @@ func Check(s *Set) []core.Finding {
 		out = append(out, checkSize(s, d)...)
 		out = append(out, checkImports(s, d)...)
 		out = append(out, checkStale(s, d)...)
+		out = append(out, checkLangCommands(s, d)...)
 		out = append(out, checkTree(s, d)...)
 		out = append(out, checkProcedure(s, d)...)
 		out = append(out, checkVague(s, d)...)
