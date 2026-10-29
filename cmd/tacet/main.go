@@ -45,6 +45,7 @@ func init() {
 		{"measure", "context loaded at startup and what past sessions billed", runMeasure, false},
 		{"audit", "setup findings, each with a fix", runAudit, false},
 		{"docs", "check CLAUDE.md, AGENTS.md and rules: tacet docs lint", runDocs, false},
+		{"skills", "repeated requests that could be skills, with counts", runSkills, false},
 		{"check", "docs and audit for CI; exits 1 on findings", runCheck, false},
 		{"version", "print the version", runVersion, false},
 		{"apply", "apply one suggestion by id (used by /tacet)", runApply, true},
