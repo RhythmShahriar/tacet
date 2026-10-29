@@ -12,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/RhythmShahriar/tacet/tokens"
@@ -56,6 +57,8 @@ type Ref struct {
 type Set struct {
 	Root string
 	Docs []*Doc // top-level files in load order
+
+	userHome string
 }
 
 // All walks every doc, imports included, once each.
@@ -96,13 +99,28 @@ func (s *Set) StartupTokens() int {
 // the rules in .claude/rules. userHome is Claude's config dir; empty
 // skips the user file (tests and CI).
 func Load(root, userHome string) (*Set, error) {
+	return load(root, userHome, nil)
+}
+
+// load is Load reading through overlay first: a path in it has those
+// bytes, nil meaning removed.
+func load(root, userHome string, overlay map[string][]byte) (*Set, error) {
 	root, err := filepath.Abs(root)
 	if err != nil {
 		return nil, err
 	}
-	s := &Set{Root: root}
+	read := func(p string) ([]byte, error) {
+		if b, ok := overlay[p]; ok {
+			if b == nil {
+				return nil, os.ErrNotExist
+			}
+			return b, nil
+		}
+		return os.ReadFile(p) // #nosec G304 -- instruction files Claude Code would load
+	}
+	s := &Set{Root: root, userHome: userHome}
 	add := func(path string, k Kind, always bool) *Doc {
-		d := readDoc(path, k, always, 0, map[string]bool{})
+		d := readDoc(read, path, k, always, 0, map[string]bool{})
 		if d != nil {
 			s.Docs = append(s.Docs, d)
 		}
@@ -141,8 +159,17 @@ func Load(root, userHome string) (*Set, error) {
 
 	rules, _ := filepath.Glob(filepath.Join(root, ".claude", "rules", "*.md"))
 	sub, _ := filepath.Glob(filepath.Join(root, ".claude", "rules", "*", "*.md"))
-	for _, r := range append(rules, sub...) {
-		b, err := os.ReadFile(r) // #nosec G304 -- a rule file in the project
+	rules = append(rules, sub...)
+	var added []string
+	for p := range overlay {
+		if m, _ := filepath.Match(filepath.Join(root, ".claude", "rules", "*.md"), p); m && !slices.Contains(rules, p) {
+			added = append(added, p)
+		}
+	}
+	slices.Sort(added)
+	rules = append(rules, added...)
+	for _, r := range rules {
+		b, err := read(r)
 		if err != nil {
 			continue
 		}
@@ -151,8 +178,8 @@ func Load(root, userHome string) (*Set, error) {
 	return s, nil
 }
 
-func readDoc(path string, k Kind, always bool, depth int, seen map[string]bool) *Doc {
-	b, err := os.ReadFile(path) // #nosec G304 -- instruction files Claude Code would load
+func readDoc(read func(string) ([]byte, error), path string, k Kind, always bool, depth int, seen map[string]bool) *Doc {
+	b, err := read(path)
 	if err != nil {
 		return nil
 	}
@@ -169,7 +196,7 @@ func readDoc(path string, k Kind, always bool, depth int, seen map[string]bool) 
 			d.TooDeep = append(d.TooDeep, ref)
 			continue
 		}
-		c := readDoc(target, Import, always, depth+1, seen)
+		c := readDoc(read, target, Import, always, depth+1, seen)
 		if c == nil {
 			d.Missing = append(d.Missing, ref)
 			continue

@@ -44,7 +44,7 @@ func init() {
 		{"uninstall", "remove tacet from this project and restore your files", runUninstall, false},
 		{"measure", "context loaded at startup and what past sessions billed", runMeasure, false},
 		{"audit", "setup findings, each with a fix", runAudit, false},
-		{"docs", "check CLAUDE.md, AGENTS.md and rules: tacet docs lint", runDocs, false},
+		{"docs", "instruction files: tacet docs lint|fix|init|sync", runDocs, false},
 		{"skills", "repeated requests that could be skills, with counts", runSkills, false},
 		{"check", "docs and audit for CI; exits 1 on findings", runCheck, false},
 		{"transcribe", "audio to a Markdown transcript: tacet transcribe <file>", runTranscribe, false},

@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/RhythmShahriar/tacet/core"
 )
 
 // project writes files into a temp dir; keys are slash paths.
@@ -55,7 +57,7 @@ func TestRules(t *testing.T) {
 		}, map[string]string{"CLAUDE.md": "@a/1.md\n", "a/1.md": "@2.md\n", "a/2.md": "end\n"}},
 		{"agents/shadowed", map[string]string{"CLAUDE.md": "x\n", "AGENTS.md": "rules\n"}, map[string]string{"CLAUDE.md": "@AGENTS.md\n", "AGENTS.md": "rules\n"}},
 		{"stale/path", map[string]string{"CLAUDE.md": "Config lives in `config/app.yaml`.\n"}, map[string]string{"CLAUDE.md": "Config lives in `config/app.yaml`.\n", "config/app.yaml": "a: 1\n"}},
-		{"stale/command", map[string]string{"CLAUDE.md": "Run `make lint`.\n", "Makefile": "test:\n\tgo test\n"}, map[string]string{"CLAUDE.md": "Run `make test`.\n", "Makefile": "test:\n\tgo test\n"}},
+		{"stale/command", map[string]string{"CLAUDE.md": "Run `make lint`.\n", "Makefile": "test:\n\tgo test\n"}, map[string]string{"CLAUDE.md": "Run `make test`. Make sure to make it pass.\n", "Makefile": "test:\n\tgo test\n"}},
 		{"derivable/tree", map[string]string{"CLAUDE.md": "```\nsrc/\n├── a.go\n└── b.go\n```\n"}, map[string]string{"CLAUDE.md": "```\ngo test ./...\n```\n"}},
 		{"move/procedure", map[string]string{"CLAUDE.md": steps}, map[string]string{"CLAUDE.md": "## Release\n1. tag\n2. push\n"}},
 		{"vague", map[string]string{"CLAUDE.md": "Always write clean code.\n"}, map[string]string{"CLAUDE.md": "Run make check before committing.\n"}},
@@ -131,8 +133,14 @@ func TestBridgeFix(t *testing.T) {
 	s, _ := Load(root, "")
 	for _, f := range Check(s) {
 		if f.Rule == "agents/shadowed" {
-			if f.Fix == nil || !f.Fix.Safe || !strings.HasPrefix(string(f.Fix.Edits[0].New), "@AGENTS.md\n") {
+			// It adds AGENTS.md's tokens to every session, so it is a
+			// suggestion, never applied by init on its own.
+			if f.Fix == nil || f.Fix.Safe {
 				t.Fatalf("bad fix %+v", f.Fix)
+			}
+			plan, err := Plan([]*core.Fix{f.Fix, f.Fix})
+			if err != nil || string(plan[0].New) != "@AGENTS.md\n\nx\n" {
+				t.Fatalf("bridge applied twice: %q %v", plan[0].New, err)
 			}
 			return
 		}
