@@ -13,6 +13,7 @@
 #
 # Environment:
 #   BENCH_MODEL      model for claude -p (default haiku)
+#   BENCH_WARM       1 (default) warms the cache before each run; 0 skips it
 #   BENCH_MAX_TURNS  turn cap (default 30, a task can lower or raise it)
 #   BENCH_TIMEOUT    seconds per run (default 600)
 #   BENCH_REP        number of the first rep (default 1), for interleaving
@@ -62,6 +63,24 @@ for ((rep = first; rep < first + reps; rep++)); do
 	if ! "$BENCH/setup/$mode.sh" prepare "$proj" >"$work/prepare.log" 2>&1; then
 		cat "$work/prepare.log" >&2
 		die "prepare failed: $mode on $task"
+	fi
+	# Warm the prompt cache for this mode in this project first and don't
+	# record it. Without it, whichever mode runs after a pause pays for a
+	# cold cache and the numbers measure timing, not the tool. The project
+	# is then rebuilt at the same path, so hooks that wrote files during
+	# the warm-up (a handoff note, an index) leave nothing behind.
+	if [ "${BENCH_WARM:-1}" = 1 ]; then
+		(
+			cd "$proj"
+			mode_env "$mode"
+			link_auth
+			timeout 120 claude -p --model "$model" --max-turns 1 --output-format json \
+				"[warm-$(od -An -N6 -tx1 /dev/urandom | tr -d ' \n')] Reply with just: ok" >/dev/null 2>&1
+		) || :
+		chmod -R u+w "$proj" 2>/dev/null || :
+		rm -rf "$proj"
+		"$tdir/setup.sh" "$proj" >"$work/setup.log" 2>&1 || die "task setup failed: $task"
+		"$BENCH/setup/$mode.sh" prepare "$proj" >"$work/prepare.log" 2>&1 || die "prepare failed: $mode on $task"
 	fi
 
 	# A unique id first, so no run reads another run's cached prompt:
