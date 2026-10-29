@@ -1,0 +1,10 @@
+# Copyright (c) 2026 Rhythm Shahriar <me@rhy.io>
+# SPDX-License-Identifier: MIT
+
+# Golden files and fixture projects are compared byte for byte, so every
+# text file checks out with LF on every OS.
+* text=auto eol=lf
+
+*.pdf binary
+*.docx binary
+*.wav binary

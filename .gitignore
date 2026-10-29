@@ -1,0 +1,19 @@
+/bin/
+/dist/
+/tacet
+/tacet.exe
+*.exe
+*.test
+*.out
+/coverage.*
+.DS_Store
+.idea/
+.vscode/
+
+# tacet's own state when it is run on this repo
+/.tacet/
+
+# Local environment files: never commit secrets
+.env
+.env.*
+!.env.example

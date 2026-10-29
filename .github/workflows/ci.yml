@@ -1,0 +1,39 @@
+# Copyright (c) 2026 Rhythm Shahriar <me@rhy.io>
+# SPDX-License-Identifier: MIT
+
+name: ci
+on:
+  push:
+    branches: [master]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  # gofmt, vet, golangci-lint, go test -race and a build on Linux, Windows
+  # and macOS, plus the writing-style and pinned-actions checks.
+  go:
+    uses: RhythmShahriar/.github/.github/workflows/ci-go.yml@4e1c576341190242c956652d00cea38d7918cd40 # master 2026-10-26
+    with:
+      os: '["ubuntu-latest", "windows-latest", "macos-latest"]'
+      style: true
+      pin-check: true
+  commitlint:
+    uses: RhythmShahriar/.github/.github/workflows/commitlint.yml@4e1c576341190242c956652d00cea38d7918cd40 # master 2026-10-26
+  brand:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: headers and attribution
+        run: scripts/check-brand.sh
+      - name: commit messages carry no AI attribution
+        if: github.event_name == 'pull_request'
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          if git log --format=%B "$BASE..HEAD" | grep -Eiq '^co-authored-by:.*(claude|anthropic|copilot|openai)|generated (with|by) .*(claude|copilot|chatgpt)'; then # brand:allow
+            echo "a commit carries an AI attribution line" >&2
+            exit 1
+          fi
