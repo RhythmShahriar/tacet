@@ -31,6 +31,47 @@ default. This page lists each measurement and how to repeat it.
 | Deny reads of lockfiles and build output | Exact version from a 475 KB lockfile | +12% | +7% | 2.7 → 3 | 0/3 / 3/3 | **removed**: Claude Code already refuses a file that big and greps it |
 | Deny reads of lockfiles and build output | Overview of the project's dependencies | 0% | -3% | 2 → 2 | 3/3 / 3/3 | **removed** |
 
+## Against other tools
+
+Nine tasks, every tool at its default settings, three runs each, on Claude Haiku through Claude Code 2.1.92 (2026-10-30). Each tool runs in its own Claude Code config folder so none of them sees another. Before every measured run the tool gets an unrecorded warm-up in the same project, so every run starts with a warm prompt cache and the numbers measure the tool, not who happened to run after a pause. An answer counts only when its check passes: every expected fact for questions, the tests passing for fixes.
+
+| Tool | Version | Cost per run | Tokens per run | Correct |
+|---|---|---|---|---|
+| **tacet** | 1.1.0 | **-32%** | **-34%** | 27/27 |
+| tacet with feedback, testgate and bigoutput on | 1.1.0 | -36% | -34% | 27/27 |
+| rtk | 1.1.0 | -16% | -19% | 27/27 |
+| serena | 2.1.0 | -4% | -4% | 27/27 |
+| caveman | 4.0.1 | +2% | -1% | 26/27 |
+| claude-mem | 15.6.0 | +2% | +5% | 26/26 |
+| context-mode | 1.0.169 | +4% | +18% | 27/27 |
+| graphify | 0.9.97 | +10% | +6% | 27/27 |
+
+Against Claude Code with no tool: $0.0573 and 234k tokens per run, 27/27 correct. claude-mem has 26 runs: one didn't record a result.
+
+Cost per run by task (mean of three runs, US dollars):
+
+| Task | No tool | tacet | rtk | serena | caveman | claude-mem | context-mode | graphify |
+|---|---|---|---|---|---|---|---|---|
+| Question about one part of a 43-page PDF | 0.094 | **0.022** | 0.075 | 0.093 | 0.079 | 0.103 | 0.055 | 0.079 |
+| Facts from the start, middle and end of the PDF | 0.075 | **0.071** | 0.093 | 0.083 | 0.073 | 0.086 | 0.098 | 0.083 |
+| Question about a Word document | 0.056 | **0.021** | 0.061 | 0.061 | 0.092 | 0.062 | 0.067 | 0.074 |
+| Where a Go function is defined and called | 0.018 | **0.011** | 0.016 | 0.016 | 0.020 | 0.015 | 0.015 | 0.025 |
+| Same in a Python repo | 0.019 | **0.009** | 0.016 | 0.016 | 0.021 | 0.018 | 0.022 | 0.034 |
+| Same in a Rust repo | 0.025 | **0.010** | 0.018 | 0.024 | 0.024 | 0.018 | 0.035 | 0.046 |
+| Fix a failing Python test | 0.080 | 0.085 | **0.047** | 0.070 | 0.081 | 0.098 | 0.115 | 0.080 |
+| Fix a failing Rust test | 0.041 | 0.041 | 0.037 | **0.037** | 0.044 | 0.045 | 0.042 | 0.042 |
+| Continue a half-done change | 0.109 | 0.079 | **0.071** | 0.093 | 0.089 | 0.083 | 0.089 | 0.105 |
+
+Where tacet loses: fixing a failing Python test costs 7% more than no tool. rtk is cheapest there; trimming test output pays off in that task. Fixing the Rust test is even.
+
+The first full run, before the warm-up was added, ranked the tools the same way at the top (tacet the only tool cheaper than no tool). It also wrongly penalized whichever tool ran after a pause. It caught a tacet bug too: the PDF converter split a code name across a fake heading, so tacet got the whole-document task wrong. Both are fixed; the raw results of both runs are in `testbed/bench/results/` (lines 1 to 243 are the first run).
+
+Features that ship off and why, from this run (tacet with all features on compared with tacet):
+- **feedback** and **testgate**: no gain on the two fix tasks (Python even, Rust 15% more), so they stay off.
+- **bigoutput**: a small gain within the noise of three runs, so it stays off until a larger run shows it.
+
+Repeat it: `testbed/bench/all.sh 3`, then `testbed/bench/table.sh`. Setup, pinned versions and fairness rules: [testbed/bench/README.md](../testbed/bench/README.md).
+
 ## What we learned
 
 - Turning a PDF into Markdown alone saved only about 14%: the text is the

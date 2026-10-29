@@ -72,6 +72,22 @@ Once `tacet init` has run, the plugin's hooks do this without being asked:
 
 ## Measured savings
 
+**Against other tools.** Nine tasks (PDF and Word questions, code navigation in Go, Python and Rust, fixing failing tests, continuing a session), three runs each on Claude Haiku, every answer checked:
+
+| Tool | Cost per run | Tokens | Correct |
+|---|---|---|---|
+| **tacet** | **-32%** | **-34%** | 27/27 |
+| rtk | -16% | -19% | 27/27 |
+| serena | -4% | -4% | 27/27 |
+| caveman | +2% | -1% | 26/27 |
+| claude-mem | +2% | +5% | 26/26 |
+| context-mode | +4% | +18% | 27/27 |
+| graphify | +10% | +6% | 27/27 |
+
+Compared with Claude Code and no tool. tacet is cheapest on documents, code navigation and continuing work; rtk is cheapest on fixing a failing Python test. Per-task numbers, method and how to rerun it: [docs/benchmark.md](docs/benchmark.md#against-other-tools).
+
+**Per feature.**
+
 Each feature is measured with A/B runs through `claude -p`, with and without tacet, three times each. A feature that doesn't save tokens without hurting answers is removed or stays off. Full method and how to repeat it: [docs/benchmark.md](docs/benchmark.md).
 
 | Feature | Scenario | Tokens | Cost | Correct (with / without) |
