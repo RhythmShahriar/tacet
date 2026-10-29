@@ -48,21 +48,6 @@ func usage(sessions int, mcp map[string]int, skills map[string]int) *measure.Usa
 	return &measure.Usage{Sessions: sessions, MCPCalls: mcp, SkillCalls: skills, DocReads: map[string]int{}}
 }
 
-func TestHeavyReads(t *testing.T) {
-	pos := env(t, map[string]string{"package-lock.json": "{}", "package.json": "{}", "dist/a.js": "x"})
-	if rulesFor(t, pos, nil)["reads/heavy"] != 1 {
-		t.Fatal("lockfile and dist not flagged")
-	}
-	neg := env(t, map[string]string{
-		"package-lock.json":           "{}",
-		".claude/settings.local.json": `{"permissions":{"deny":["Read(./**/package-lock.json)"]}}`,
-		"vendor/lib.c":                "hand-written",
-	})
-	if rulesFor(t, neg, nil)["reads/heavy"] != 0 {
-		t.Fatal("already denied, and a hand-written vendor/ is source")
-	}
-}
-
 func TestToolSearchOff(t *testing.T) {
 	pos := env(t, map[string]string{
 		".mcp.json":             `{"mcpServers":{"gh":{"command":"gh-mcp"}}}`,

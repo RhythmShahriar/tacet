@@ -39,7 +39,6 @@ func LocalSettings(root string) string {
 // Run returns every finding, ranked by tokens saved.
 func Run(in Input) []core.Finding {
 	var out []core.Finding
-	out = append(out, heavyReads(in.Root, claude.Denies(claude.ReadSettings(in.Root)))...)
 	out = append(out, toolSearch(in)...)
 	out = append(out, unusedMCP(in)...)
 	out = append(out, unusedSkills(in)...)
@@ -50,103 +49,6 @@ func Run(in Input) []core.Finding {
 	out = append(out, agentsHook(in.Root)...)
 	out = append(out, attribution(in.Root)...)
 	core.Rank(out)
-	return out
-}
-
-// heavy is a path pattern the agent never needs to read whole.
-type heavy struct {
-	glob  string // checked against the project
-	rule  string // the deny rule
-	label string
-}
-
-var heavyPaths = []heavy{
-	{"package-lock.json", "Read(./**/package-lock.json)", "npm lockfile"},
-	{"pnpm-lock.yaml", "Read(./**/pnpm-lock.yaml)", "pnpm lockfile"},
-	{"yarn.lock", "Read(./**/yarn.lock)", "yarn lockfile"},
-	{"bun.lockb", "Read(./**/bun.lockb)", "bun lockfile"},
-	{"composer.lock", "Read(./**/composer.lock)", "composer lockfile"},
-	{"Cargo.lock", "Read(./**/Cargo.lock)", "cargo lockfile"},
-	{"poetry.lock", "Read(./**/poetry.lock)", "poetry lockfile"},
-	{"uv.lock", "Read(./**/uv.lock)", "uv lockfile"},
-	{"go.sum", "Read(./**/go.sum)", "go checksums"},
-	{"node_modules", "Read(./**/node_modules/**)", "node_modules"},
-	{"vendor", "Read(./vendor/**)", "vendored code"},
-	{"dist", "Read(./dist/**)", "build output"},
-	{"build", "Read(./build/**)", "build output"},
-	{".next", "Read(./**/.next/**)", "Next.js build"},
-	{"coverage", "Read(./coverage/**)", "coverage output"},
-	{"target", "Read(./target/**)", "build output"},
-}
-
-// heavyReads plans deny rules for lockfiles and build output the project
-// has and doesn't deny yet. Reading one costs thousands of tokens and
-// teaches the agent nothing; it still sees them in listings and git.
-func heavyReads(root string, denies []string) []core.Finding {
-	have := map[string]bool{}
-	for _, d := range denies {
-		have[d] = true
-	}
-	var rules, labels []string
-	size := int64(0)
-	for _, h := range heavyPaths {
-		fi, err := os.Stat(filepath.Join(root, h.glob))
-		if err != nil || have[h.rule] {
-			continue
-		}
-		if h.glob == "vendor" || h.glob == "build" || h.glob == "target" {
-			// Only build-tool folders: a hand-written vendor/ or build/
-			// can be source the agent should read.
-			if !looksGenerated(root, h.glob) {
-				continue
-			}
-		}
-		rules = append(rules, h.rule)
-		labels = append(labels, h.label)
-		if !fi.IsDir() {
-			size += fi.Size()
-		}
-	}
-	if len(rules) == 0 {
-		return nil
-	}
-	saved := int(size / 4)
-	return []core.Finding{{
-		Rule: "reads/heavy", Severity: core.Medium,
-		Message: fmt.Sprintf("Claude can read %s whole", strings.Join(dedupe(labels), ", ")),
-		Hint:    "deny reads of them; listings, git and your tools still see them",
-		Tokens:  0,
-		Fix: &core.Fix{
-			ID: "deny-heavy-reads", Title: fmt.Sprintf("Deny reads of %d generated paths", len(rules)), Safe: true,
-			Edits:  []core.Edit{fix.AddDeny(LocalSettings(root), rules...)},
-			Tokens: saved,
-		},
-	}}
-}
-
-func looksGenerated(root, dir string) bool {
-	markers := map[string][]string{
-		"vendor": {"composer.json", "go.mod", "Gemfile"},
-		"build":  {"package.json", "build.gradle", "CMakeLists.txt", "pyproject.toml"},
-		"target": {"Cargo.toml", "pom.xml"},
-	}
-	for _, m := range markers[dir] {
-		if _, err := os.Stat(filepath.Join(root, m)); err == nil {
-			return true
-		}
-	}
-	return false
-}
-
-func dedupe(s []string) []string {
-	seen := map[string]bool{}
-	var out []string
-	for _, x := range s {
-		if !seen[x] {
-			seen[x] = true
-			out = append(out, x)
-		}
-	}
 	return out
 }
 
