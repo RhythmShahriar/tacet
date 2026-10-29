@@ -106,7 +106,7 @@ func TestStatusComparesMainOnly(t *testing.T) {
 func TestStatusRebuildsOldBaseline(t *testing.T) {
 	old := `{"time":"2026-10-28T00:00:00Z","startup_tokens":4000,"per_request_tokens":60000,"cache_hit_rate":0.5,"sessions":3}`
 	root := statusProject(t, old, 20)
-	// A session before init: 400k per main request, and a subagent.
+	// A session before init: 400k per main request plus a subagent.
 	proj := claude.ProjectDir(root)
 	before := baseTime.Add(-2 * time.Hour)
 	writeFile(t, filepath.Join(proj, "s0.jsonl"), requests("o", before, 5, 400_000))
