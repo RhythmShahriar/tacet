@@ -1,0 +1,3 @@
+- Start, section 1.2: HARBOR-LANTERN-17
+- Middle, section 4.3: COPPER-WILLOW-42
+- End, Appendix B: SALT-MERIDIAN-88

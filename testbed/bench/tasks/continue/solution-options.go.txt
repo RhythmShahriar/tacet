@@ -1,0 +1,55 @@
+// Copyright (c) 2026 Rhythm Shahriar <me@rhy.io>
+// SPDX-License-Identifier: MIT
+
+package slug
+
+import "strings"
+
+// Options tune SlugifyWith.
+type Options struct {
+	// Sep joins the words; empty means "-".
+	Sep string
+	// MaxLen caps the slug's length in bytes; 0 means no cap. The slug
+	// is cut after the last whole word that fits. When even the first
+	// word is too long, that word is cut to MaxLen bytes (never in the
+	// middle of a character).
+	MaxLen int
+}
+
+// SlugifyWith is Slugify with a custom separator and a length cap.
+func SlugifyWith(s string, o Options) string {
+	sep := o.Sep
+	if sep == "" {
+		sep = "-"
+	}
+	words := strings.Split(Slugify(s), "-")
+	if len(words) == 1 && words[0] == "" {
+		return ""
+	}
+	if o.MaxLen <= 0 {
+		return strings.Join(words, sep)
+	}
+	out := ""
+	for _, w := range words {
+		next := w
+		if out != "" {
+			next = out + sep + w
+		}
+		if len(next) > o.MaxLen {
+			break
+		}
+		out = next
+	}
+	if out == "" {
+		for i := range words[0] {
+			if i > o.MaxLen {
+				break
+			}
+			out = words[0][:i]
+		}
+		if len(words[0]) <= o.MaxLen {
+			out = words[0]
+		}
+	}
+	return out
+}

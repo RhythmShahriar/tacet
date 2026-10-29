@@ -1,0 +1,1 @@
+Those tokens last 38 minutes and only clients in the ledger-sync group get them (section 4.4).

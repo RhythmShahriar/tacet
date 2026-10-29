@@ -1,0 +1,1 @@
+In oauth-guide.pdf, the section on the Client Credentials Grant has an implementer note. How long do those tokens last in the reference deployment and which client group may get them?

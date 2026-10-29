@@ -1,0 +1,30 @@
+// Copyright (c) 2026 Rhythm Shahriar <me@rhy.io>
+// SPDX-License-Identifier: MIT
+
+package slug
+
+import "testing"
+
+func TestSlugifyWith(t *testing.T) {
+	cases := []struct {
+		in   string
+		o    Options
+		want string
+	}{
+		{"Hello, World!", Options{}, "hello-world"},
+		{"Hello, World!", Options{Sep: "_"}, "hello_world"},
+		{"", Options{MaxLen: 4}, ""},
+		{"The quick brown fox", Options{MaxLen: 15}, "the-quick-brown"},
+		{"The quick brown fox", Options{MaxLen: 14}, "the-quick"},
+		{"The quick brown fox", Options{MaxLen: 100}, "the-quick-brown-fox"},
+		{"a b c", Options{Sep: "__", MaxLen: 3}, "a"},
+		{"Supercalifragilistic word", Options{MaxLen: 5}, "super"},
+		{"Ümlaut", Options{MaxLen: 1}, ""},
+		{"Ümlaut", Options{MaxLen: 2}, "ü"},
+	}
+	for _, c := range cases {
+		if got := SlugifyWith(c.in, c.o); got != c.want {
+			t.Errorf("SlugifyWith(%q, %+v) = %q, want %q", c.in, c.o, got, c.want)
+		}
+	}
+}

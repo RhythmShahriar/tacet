@@ -1,0 +1,1 @@
+oauth-guide.pdf has three implementer notes that give code names: one near the start, one in the middle and one near the end. For each one, give the code name and the number of the section it sits in.
