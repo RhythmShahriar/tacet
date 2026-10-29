@@ -18,7 +18,7 @@ var (
 // monospace font produced and hard line wraps. Paragraph breaks,
 // headings, lists, tables and code fences stay.
 func Tighten(md string) string {
-	lines := strings.Split(strings.ReplaceAll(md, "\r\n", "\n"), "\n")
+	lines := mergeFragments(strings.Split(strings.ReplaceAll(md, "\r\n", "\n"), "\n"))
 
 	// Lines wrapped whole in backticks: a monospace font, not code. Only
 	// unwrap when it is the document's habit, so real inline code stays.
@@ -118,3 +118,67 @@ func joinable(prev, next string) bool {
 }
 
 func startsLower(s string) bool { return s != "" && s[0] >= 'a' && s[0] <= 'z' }
+
+var (
+	fragmentRe = regexp.MustCompile(`^#{1,6}\s+(\S.{0,60}[.;,)])$`)
+	capsRe     = regexp.MustCompile(`[A-Z0-9][A-Z0-9-]*$`)
+	capsHeadRe = regexp.MustCompile(`^[A-Z0-9][A-Z0-9-]*`)
+)
+
+// mergeFragments undoes a converter mistake: the wrapped end of a line,
+// often bold, comes out as a heading of its own ("#### LANTERN-17."),
+// which splits a fact in two. A "heading" that is a short fragment ending
+// in punctuation, right after a line cut off mid-sentence, joins that
+// line again. Two code-like capitalized words meet at a hyphen, the one
+// the line break took.
+func mergeFragments(lines []string) []string {
+	out := make([]string, 0, len(lines))
+	for _, l := range lines {
+		m := fragmentRe.FindStringSubmatch(strings.TrimSpace(l))
+		prev := lastText(out)
+		if m == nil || prev < 0 || !unfinished(out[prev]) {
+			out = append(out, l)
+			continue
+		}
+		frag := m[1]
+		p := strings.TrimRight(out[prev], " ")
+		bold := strings.HasSuffix(p, "**")
+		p = strings.TrimSuffix(p, "**")
+		sep := " "
+		if capsRe.MatchString(p) && capsHeadRe.MatchString(frag) {
+			sep = "-"
+		}
+		joined := p + sep + frag
+		if bold {
+			joined += "**"
+		}
+		out[prev] = joined
+		out = out[:prev+1] // drop the blank lines between them
+	}
+	return out
+}
+
+// lastText is the index of the last non-blank line, or -1.
+func lastText(lines []string) int {
+	for i := len(lines) - 1; i >= 0; i-- {
+		if strings.TrimSpace(lines[i]) != "" {
+			return i
+		}
+	}
+	return -1
+}
+
+// unfinished reports whether a line stops mid-sentence: no closing
+// punctuation once bold marks are removed and not itself a heading,
+// list item or table row.
+func unfinished(l string) bool {
+	t := strings.TrimSpace(strings.TrimSuffix(strings.TrimPrefix(strings.TrimSpace(l), "**"), "**"))
+	if t == "" || strings.HasPrefix(t, "#") || strings.HasPrefix(t, "|") || blockRe.MatchString(t) {
+		return false
+	}
+	switch t[len(t)-1] {
+	case '.', ':', '?', '!', ';', ')', '"':
+		return false
+	}
+	return true
+}

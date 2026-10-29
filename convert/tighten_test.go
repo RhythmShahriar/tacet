@@ -48,3 +48,25 @@ func TestTightenEscapedHeadings(t *testing.T) {
 		t.Fatalf("got %q", got)
 	}
 }
+
+func TestTightenMergesHeadingFragments(t *testing.T) {
+	in := "**Implementer note: the deployment is code-named HARBOR**\n\n#### LANTERN-17.\n\nNext paragraph.\n" +
+		"The flow is described in\n\n#### Section 4.\n\n## 4.3 Real heading\nbody\n"
+	got := Tighten(in)
+	if !strings.Contains(got, "code-named HARBOR-LANTERN-17.**") {
+		t.Fatalf("code name not rejoined:\n%s", got)
+	}
+	if !strings.Contains(got, "The flow is described in Section 4.") {
+		t.Fatalf("plain fragment not rejoined:\n%s", got)
+	}
+	if !strings.Contains(got, "## 4.3 Real heading") {
+		t.Fatalf("a real heading was merged:\n%s", got)
+	}
+}
+
+func TestTightenKeepsHeadingsAfterFinishedLines(t *testing.T) {
+	in := "A finished sentence.\n\n## Overview.\nbody\n"
+	if got := Tighten(in); !strings.Contains(got, "## Overview.") {
+		t.Fatalf("heading after a finished line was merged:\n%s", got)
+	}
+}
