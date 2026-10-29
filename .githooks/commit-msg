@@ -21,8 +21,8 @@ fail() {
 
     types   feat fix perf refactor docs test build ci chore style revert
     scope   optional: core cli ui claude tokens measure audit docs skills
-            map memory convert audio speak guard handoff trim hook mcp
-            report plugin bench testbed ci release deps
+            map memory convert audio speak guard handoff trim feedback hook
+            mcp report plugin bench testbed ci release deps
     !       before the colon marks a breaking change: feat(cli)!: ...
 
   e.g.  feat(audit): flag mcp servers no session used
@@ -44,7 +44,7 @@ esac
 types='feat|fix|perf|refactor|docs|test|build|ci|chore|style|revert'
 
 # tacet's scopes, one per area of the tree.
-scopes='core cli ui claude tokens measure audit docs skills map memory convert audio speak guard handoff trim hook mcp report plugin bench testbed ci release deps'
+scopes='core cli ui claude tokens measure audit docs skills map memory convert audio speak guard handoff trim feedback hook mcp report plugin bench testbed ci release deps'
 
 printf '%s' "$header" | grep -Eq "^($types)(\([a-z0-9][a-z0-9._/-]*\))?!?: [^ ]" ||
 	fail "header must be 'type(scope): subject'"
