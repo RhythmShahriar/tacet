@@ -1,0 +1,172 @@
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="tacet {{.Version}}">
+<title>tacet report</title>
+<style>
+:root {
+  --ink: #100F0D;
+  --paper: #FFFFFF;
+  --dot: #FF7C52;
+  --dot-text: #E8603A;
+  --bg: var(--paper);
+  --fg: var(--ink);
+  --muted: #6B6862;
+  --line: #E7E5E1;
+  --card: #FAF9F7;
+  --track: #EFEDE9;
+  --good: #0E8A5F;
+  --bad: #C2410C;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: var(--ink);
+    --fg: var(--paper);
+    --muted: #A19D96;
+    --line: #2A2824;
+    --card: #181714;
+    --track: #2A2824;
+    --dot-text: var(--dot);
+    --good: #34D399;
+    --bad: #FB923C;
+  }
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); }
+body {
+  margin: 0 auto;
+  max-width: 960px;
+  padding: 40px 20px 56px;
+  background: var(--bg);
+  color: var(--fg);
+  font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+code, .mono, .num { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; }
+header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 16px; margin-bottom: 8px; }
+h1 { margin: 0; font-size: 32px; letter-spacing: -0.02em; color: var(--dot-text); }
+.meta { color: var(--muted); font-size: 13px; }
+.root { color: var(--muted); font-size: 13px; overflow-wrap: anywhere; margin: 0 0 28px; }
+h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 0 0 12px; font-weight: 600; }
+section { margin-top: 32px; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
+.tile { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+.tile .k { color: var(--muted); font-size: 12px; }
+.tile .v { font-size: 26px; font-weight: 650; letter-spacing: -0.01em; }
+.tile .v.dot { color: var(--dot-text); }
+.tile .s { color: var(--muted); font-size: 12px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 6px 16px; }
+.row { display: grid; grid-template-columns: minmax(0, 1fr) 84px; gap: 4px 16px; padding: 10px 0; border-top: 1px solid var(--line); align-items: center; }
+.row:first-child { border-top: 0; }
+.row .label { overflow-wrap: anywhere; }
+.row .detail { color: var(--muted); font-size: 12px; }
+.row .num { text-align: right; font-size: 14px; }
+.bar { grid-column: 1 / -1; height: 6px; border-radius: 3px; background: var(--track); overflow: hidden; }
+.bar span { display: block; height: 100%; background: var(--dot); border-radius: 3px; }
+.cmp { width: 100%; border-collapse: collapse; }
+.cmp th, .cmp td { text-align: left; padding: 10px 8px; border-top: 1px solid var(--line); }
+.cmp tr:first-child th, .cmp tr:first-child td { border-top: 0; }
+.cmp th { color: var(--muted); font-weight: 500; font-size: 12px; }
+.cmp td.num, .cmp th.num { text-align: right; }
+.cmp th.num { font-family: inherit; }
+.good { color: var(--good); font-weight: 600; }
+.bad { color: var(--bad); font-weight: 600; }
+.same { color: var(--muted); }
+.empty { color: var(--muted); padding: 12px 0; margin: 0; }
+.sug { padding: 12px 0; border-top: 1px solid var(--line); }
+.sug:first-child { border-top: 0; }
+.sug .t { font-weight: 600; }
+.sug .t .num { color: var(--dot-text); font-weight: 600; margin-left: 6px; }
+.sug .w { color: var(--muted); font-size: 13px; }
+.sug code { font-size: 12px; background: var(--track); padding: 1px 6px; border-radius: 4px; }
+.note { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
+.split { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+.cmpwrap { overflow-x: auto; }
+footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; text-align: center; }
+footer a { color: inherit; }
+</style>
+</head>
+<body>
+<header>
+  <h1>tacet</h1>
+  <span class="meta">report · {{.Generated}} · {{.Version}}</span>
+</header>
+<p class="root mono">{{.Root}}</p>
+
+<div class="tiles">
+  <div class="tile"><div class="k">startup context</div><div class="v dot num">{{.StartupSum}}</div><div class="s">tokens before your first prompt</div></div>
+  <div class="tile"><div class="k">per request</div><div class="v num">{{.PerRequest}}</div><div class="s">{{plural .Requests "request"}} in {{plural .Sessions "session"}}{{if .HasBaseline}} since init{{end}}</div></div>
+  <div class="tile"><div class="k">cache hits</div><div class="v num">{{.HitRate}}</div><div class="s">of input read from the prompt cache</div></div>
+  <div class="tile"><div class="k">documents</div><div class="v dot num">{{.DocSaved}}</div><div class="s">fewer tokens over {{plural .DocReads "read"}}, net</div></div>
+</div>
+
+<section>
+  <h2>Since init</h2>
+  {{if .HasBaseline}}
+  <div class="card cmpwrap">
+    <table class="cmp">
+      <tr><th>measure</th><th class="num">at init ({{.BaseDate}})</th><th class="num">now</th><th class="num">change</th></tr>
+      {{range .Compare}}<tr><td>{{.Label}}</td><td class="num mono">{{.Before}}</td><td class="num mono">{{.After}}</td><td class="num {{.Class}}">{{.Delta}}</td></tr>
+      {{end}}
+    </table>
+  </div>
+  {{if eq .Sessions 0}}<p class="note">Billed savings show after your next sessions in Claude Code.</p>{{end}}
+  {{else}}
+  <p class="empty">No baseline yet. Run <code>tacet init</code> once and this compares every later session against it.</p>
+  {{end}}
+</section>
+
+<section>
+  <h2>Loaded every session</h2>
+  <div class="split">
+    <div class="card">
+      {{range .Groups}}<div class="row"><div><div class="label">{{.Label}}</div></div><div class="num">{{.Value}}</div><div class="bar"><span style="width:{{printf "%.1f" .Pct}}%"></span></div></div>
+      {{else}}<p class="empty">Nothing beyond Claude Code's own prompt.</p>{{end}}
+    </div>
+    <div class="card">
+      {{range .Startup}}<div class="row"><div><div class="label mono">{{.Label}}</div><div class="detail">{{.Detail}}</div></div><div class="num">{{.Value}}</div><div class="bar"><span style="width:{{printf "%.1f" .Pct}}%"></span></div></div>
+      {{else}}<p class="empty">No instruction files, skills, MCP servers or memory load at startup.</p>{{end}}
+    </div>
+  </div>
+  <p class="note">Estimates, counted offline, on top of Claude Code's own system prompt and tools.</p>
+</section>
+
+<section>
+  <h2>Cache misses</h2>
+  <div class="card">
+    {{range .Misses}}<div class="row"><div><div class="label">{{.Detail}}</div><div class="detail">{{.Label}} · {{plural .Count "time"}}</div></div><div class="num">{{.Value}}</div><div class="bar"><span style="width:{{printf "%.1f" .Pct}}%"></span></div></div>
+    {{else}}<p class="empty">No request reprocessed its context.</p>{{end}}
+  </div>
+  {{if .MissCount}}<p class="note">{{plural .MissCount "request"}} wrote {{.MissTokens}} tokens to the cache again instead of reading them.</p>{{end}}
+</section>
+
+<section>
+  <h2>Subagents</h2>
+  <div class="card">
+    {{if .Subagents}}
+    <div class="row"><div><div class="label">{{plural .Subagents "subagent"}} made {{plural .SubRequests "request"}}</div><div class="detail">{{.SubTokens}} of {{.AllTokens}} tokens</div></div><div class="num">{{.SubShare}}</div><div class="bar"><span style="width:{{printf "%.1f" .SubPct}}%"></span></div></div>
+    {{else}}<p class="empty">No subagents ran in these sessions.</p>{{end}}
+  </div>
+</section>
+
+<section>
+  <h2>Documents</h2>
+  <div class="card">
+    {{range .DocFiles}}<div class="row"><div><div class="label mono">{{.Label}}</div><div class="detail">{{plural .Count "read"}}</div></div><div class="num">{{.Value}}</div><div class="bar"><span style="width:{{printf "%.1f" .Pct}}%"></span></div></div>
+    {{else}}<p class="empty">No PDF, Word, PowerPoint or Excel reads yet.</p>{{end}}
+  </div>
+  <p class="note">Net tokens saved against reading each whole document as text. Follow-up reads count against the saving.</p>
+</section>
+
+<section>
+  <h2>Suggestions</h2>
+  <div class="card">
+    {{range .Suggestions}}<div class="sug"><div class="t">{{.Title}}{{if .Tokens}}<span class="num">-{{tokens .Tokens}}</span>{{end}}</div><div class="w">{{.Why}}</div><div class="w"><code>tacet apply {{.ID}}</code> · <code>tacet dismiss {{.ID}}</code> · or <code>/tacet</code> in Claude Code</div></div>
+    {{else}}<p class="empty">Nothing waiting.</p>{{end}}
+  </div>
+</section>
+
+<footer>Made by Rhythm Shahriar · <a href="https://github.com/RhythmShahriar/tacet">github.com/RhythmShahriar/tacet</a></footer>
+</body>
+</html>

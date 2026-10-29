@@ -8,7 +8,7 @@ export GOWORK := off
 
 FUZZTIME ?= 30s
 
-.PHONY: build test test-short lint fmt check hooks brand fuzz testbed bench
+.PHONY: build test test-short lint fmt check hooks brand fuzz testbed bench test-scripts
 
 # The release tag when HEAD is exactly on one (v1.0.0 gives 1.0.0), else dev.
 VERSION ?= $(shell git describe --tags --exact-match --match 'v*' 2>/dev/null | sed 's/^v//')
@@ -32,6 +32,10 @@ brand: ## file headers, no AI attribution, writing style
 	scripts/check-brand.sh
 
 check: lint brand test ## everything CI runs
+
+test-scripts: ## install.sh and verify-release.sh against local fixtures
+	scripts/install-test.sh
+	scripts/verify-release-test.sh
 
 hooks: ## enable the Conventional Commits hook
 	git config core.hooksPath .githooks

@@ -48,6 +48,7 @@ func init() {
 		{"skills", "repeated requests that could be skills, with counts", runSkills, false},
 		{"check", "docs and audit for CI; exits 1 on findings", runCheck, false},
 		{"transcribe", "audio to a Markdown transcript: tacet transcribe <file>", runTranscribe, false},
+		{"report", "write an HTML report of what tacet saved: .tacet/report.html", runReport, false},
 		{"version", "print the version", runVersion, false},
 		{"apply", "apply one suggestion by id (used by /tacet)", runApply, true},
 		{"dismiss", "stop suggesting one fix here (used by /tacet)", runDismiss, true},
