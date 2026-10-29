@@ -82,8 +82,11 @@ Each feature is measured with A/B runs through `claude -p`, with and without tac
 | Documents | Facts from start, middle and end of a 28-page PDF, plus a summary | **-69%** | **-72%** | 3/3 / 3/3 |
 | Documents | Question about one part of a Word file | **-63%** | **-46%** | 3/3 / 3/3 |
 | Handoff | "Continue where we left off" with a half-done change | **-45%** | **-26%** | 2/3 / 2/3 |
+| Code map | Where a widely used function is defined and called, 430-file repo | **-57%** | **-81%** | 3/3 / 3/3 |
+| Code map | Same, for a name grep finds at once | +3% | -10% | 3/3 / 3/3 |
+| Audio | What a voice note says (one run each; without tacet it can't be done) | -34% | -70% | 1/1 / 0/1 |
 
-Model: Claude Haiku. Claude Code 2.1.311. Date: 2026-10-29. Denying reads of lockfiles and build output was measured too and removed: it saved nothing and made one answer wrong.
+Model: Claude Haiku. Claude Code 2.1.311. Date: 2026-10-29. Denying reads of lockfiles and build output was measured too and removed: it saved nothing and blocked answers.
 
 ## Honest limits
 

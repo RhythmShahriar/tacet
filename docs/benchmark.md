@@ -25,6 +25,9 @@ default. This page lists each measurement and how to repeat it.
 | Documents | Facts from start, middle and end of a 28-page PDF, plus a summary | **-69%** | **-72%** | 7.3 → 2 | 3/3 / 3/3 | on |
 | Documents | Question about one part of a Word file (real heading styles) | **-63%** | **-46%** | 6.3 → 2 | 3/3 / 3/3 | on |
 | Handoff | "Continue where we left off" with a half-done change | **-45%** | **-26%** | 3 → 1.7 | 2/3 / 2/3 | on, only on prompts that ask to continue |
+| Code map (MCP tools) | Where a widely used function is defined and called, in a 430-file Go repo | **-57%** | **-81%** | 5.7 → 3 | 3/3 / 3/3 | on |
+| Code map (MCP tools) | Same, for a function with a distinctive name grep finds at once | +3% | -10% | 3 → 3 | 3/3 / 3/3 | on: the tool list costs a little when grep is already enough |
+| Audio | "What does the speaker say in voice-note.wav?" (one run each) | -34% | -70% | 3 → 2 | 1/1 / 0/1 | on: without tacet Claude Code can't transcribe at all |
 | Deny reads of lockfiles and build output | Exact version from a 475 KB lockfile | +12% | +7% | 2.7 → 3 | 0/3 / 3/3 | **removed**: Claude Code already refuses a file that big and greps it |
 | Deny reads of lockfiles and build output | Overview of the project's dependencies | 0% | -3% | 2 → 2 | 3/3 / 3/3 | **removed** |
 
@@ -36,8 +39,12 @@ default. This page lists each measurement and how to repeat it.
   so most questions are answered from one read.
 - Claude Code reads a PDF at about 1.5k tokens a page. The same text as
   Markdown is about 1.1k. Converted text read in full is still cheaper.
-- Claude Code refuses Word, PowerPoint and Excel files before any hook
-  runs, so tacet converts a document as soon as a prompt names it.
+- Claude Code refuses Word, PowerPoint, Excel and audio files before any
+  hook runs, so tacet converts a file as soon as a prompt names it, and
+  lists the Office files a repo tracks when a session starts.
+- The AGENTS.md bridge makes Claude follow rules it was skipping but adds
+  600 to 3,500 tokens to every session on real projects, so it is a
+  suggestion, never applied on its own.
 - A first comparison looked good because the run without tacet skipped
   pages. Questions now ask for facts spread over the whole document.
 

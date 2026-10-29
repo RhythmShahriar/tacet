@@ -23,7 +23,7 @@ for ((i = 1; i <= reps; i++)); do
 		if [ "$mode" = on ]; then
 			if [ -n "${ON_ARGS:-}" ]; then read -r -a extra <<<"$ON_ARGS"; else extra=(--plugin-dir "$plugin"); fi
 		fi
-		if ! timeout 400 claude -p --model "$model" "${extra[@]}" --allowedTools "Read Grep Glob Bash" \
+		if ! timeout 400 claude -p --model "$model" "${extra[@]}" --allowedTools "Read Grep Glob Bash ${EXTRA_TOOLS:-}" \
 			--max-turns 12 --output-format json "$nonce $prompt" >"$out" 2>/dev/null; then
 			echo "{\"mode\":\"$mode\",\"error\":true}"
 			continue
