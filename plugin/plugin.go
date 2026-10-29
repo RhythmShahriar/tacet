@@ -117,7 +117,7 @@ allowed-tools: Bash(` + b + ` status:*), Bash(` + b + ` apply:*), Bash(` + b + `
 
 Run ` + "`" + b + ` status --json` + "`" + ` and show the person, briefly:
 
-1. Tokens saved since tacet init (startup context and billed tokens per request), only the numbers it reports.
+1. Tokens saved since tacet init: the startup context, then billed tokens per request and cache hits from the main-session fields (per_request_main, cache_hit_rate_main). Show those billed numbers only when enough_data is true; otherwise say there is not enough data yet (requests_main of min_requests requests). List subagent usage on its own line, never as part of the saving. Only the numbers it reports.
 2. Each suggestion: its title, what it saves and why, one per line.
 
 Then ask which suggestions to apply. For each yes run ` + "`" + b + ` apply <id>` + "`" + `; for each no run ` + "`" + b + ` dismiss <id>` + "`" + `.

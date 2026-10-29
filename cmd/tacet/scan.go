@@ -77,6 +77,19 @@ type Baseline struct {
 	PerRequest int       `json:"per_request_tokens"`
 	HitRate    float64   `json:"cache_hit_rate"`
 	Sessions   int       `json:"sessions"`
+	// Main sessions only, the numbers status compares. Baselines from
+	// tacet 1.0 lack them; loadBaseline rebuilds them from transcripts.
+	PerRequestMain int     `json:"per_request_main"`
+	HitRateMain    float64 `json:"hit_rate_main"`
+	RequestsMain   int     `json:"requests_main"`
+	Requests       int     `json:"requests"`
+	SubRequests    int     `json:"subagent_requests"`
+}
+
+// setMain fills the main-session numbers and request counts from u.
+func (b *Baseline) setMain(u *measure.Usage) {
+	b.PerRequestMain, b.HitRateMain, b.RequestsMain = u.PerRequestMain(), u.HitRateMain(), u.MainRequests
+	b.Requests, b.SubRequests = u.Requests, u.SubRequests
 }
 
 func baselinePath(root string) string { return filepath.Join(config.Dir(root), "baseline.json") }
@@ -86,13 +99,20 @@ func saveBaseline(root string, s *scan) error {
 		return nil // the first init is the baseline; later runs keep it
 	}
 	b := Baseline{Time: time.Now().UTC(), Startup: s.Startup.Total, PerRequest: s.Usage.PerRequest(), HitRate: s.Usage.HitRate, Sessions: s.Usage.Sessions}
+	b.setMain(s.Usage)
 	return writeFileJSON(baselinePath(root), b)
 }
 
+// loadBaseline reads the baseline. One without main-session numbers is
+// rebuilt in memory from the transcripts before its time; the file is
+// left as it is.
 func loadBaseline(root string) *Baseline {
 	var b Baseline
 	if readFileJSON(baselinePath(root), &b) != nil {
 		return nil
+	}
+	if b.Requests == 0 && b.RequestsMain == 0 && !b.Time.IsZero() {
+		b.setMain(measure.MeasureUsageBefore(root, b.Time, recentSessions))
 	}
 	return &b
 }

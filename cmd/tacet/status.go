@@ -14,6 +14,7 @@ import (
 	"github.com/RhythmShahriar/tacet/handoff"
 	"github.com/RhythmShahriar/tacet/internal/config"
 	"github.com/RhythmShahriar/tacet/internal/ui"
+	"github.com/RhythmShahriar/tacet/measure"
 	"github.com/RhythmShahriar/tacet/plugin"
 )
 
@@ -33,9 +34,50 @@ type statusJSON struct {
 	PerRequest  int             `json:"per_request_tokens"`
 	SinceInit   int             `json:"sessions_since_init"`
 	HitRate     float64         `json:"cache_hit_rate"`
-	Suggestions []suggestion    `json:"suggestions"`
-	DocReads    int             `json:"document_reads"`
-	DocSaved    int             `json:"document_tokens_saved"`
+	// Main sessions only: what the savings compare. enough_data is false
+	// until min_requests main-session requests ran since init.
+	PerRequestMain    int            `json:"per_request_main"`
+	HitRateMain       float64        `json:"cache_hit_rate_main"`
+	HitRateMainActive float64        `json:"cache_hit_rate_main_without_idle"`
+	RequestsMain      int            `json:"requests_main"`
+	MinRequests       int            `json:"min_requests"`
+	EnoughData        bool           `json:"enough_data"`
+	IdleMisses        []measure.Miss `json:"idle_misses,omitempty"`
+	Subagents         int            `json:"subagents"`
+	SubRequests       int            `json:"subagent_requests"`
+	SubTokens         int            `json:"subagent_tokens"`
+	Suggestions       []suggestion   `json:"suggestions"`
+	DocReads          int            `json:"document_reads"`
+	DocSaved          int            `json:"document_tokens_saved"`
+}
+
+// minRequests is how many main-session requests since init a billed
+// comparison needs. Fewer swing on one cold cache.
+const minRequests = 20
+
+// enoughData reports whether u can be compared against b.
+func enoughData(b *Baseline, u *measure.Usage) bool {
+	return b != nil && b.RequestsMain > 0 && u.MainRequests >= minRequests
+}
+
+// notEnough is what shows instead of a percentage.
+func notEnough(b *Baseline, u *measure.Usage) string {
+	if b != nil && b.RequestsMain == 0 && u.MainRequests >= minRequests {
+		return "nothing to compare: no main-session requests before init"
+	}
+	return fmt.Sprintf("not enough data yet (%d of %d requests)", u.MainRequests, minRequests)
+}
+
+// idleMisses are the main-session requests that came back to an expired
+// cache after an idle gap.
+func idleMisses(u *measure.Usage) []measure.Miss {
+	var out []measure.Miss
+	for _, m := range u.Misses {
+		if m.Cause == "idle" && !m.Subagent {
+			out = append(out, m)
+		}
+	}
+	return out
 }
 
 // docSavings adds up .tacet/savings.jsonl.
@@ -78,6 +120,10 @@ func runStatus(a *app, _ []string) error {
 	_, sug := s.fixes()
 	st := statusJSON{Root: root, Initialized: true, Features: config.Load(root).Features, Baseline: b,
 		Startup: s.Startup.Total, PerRequest: s.Usage.PerRequest(), SinceInit: s.Usage.Sessions, HitRate: s.Usage.HitRate}
+	u := s.Usage
+	st.PerRequestMain, st.HitRateMain, st.HitRateMainActive, st.RequestsMain = u.PerRequestMain(), u.HitRateMain(), u.HitRateMainActive(), u.MainRequests
+	st.MinRequests, st.EnoughData, st.IdleMisses = minRequests, enoughData(b, u), idleMisses(u)
+	st.Subagents, st.SubRequests, st.SubTokens = u.Subagents, u.SubRequests, u.SubTokens
 	st.DocReads, st.DocSaved = docSavings(root)
 	for _, f := range sug {
 		st.Suggestions = append(st.Suggestions, suggestion{ID: f.Fix.ID, Title: f.Fix.Title, Why: f.Message, Tokens: saving(f)})
@@ -91,11 +137,23 @@ func runStatus(a *app, _ []string) error {
 	fmt.Fprintln(w, ui.Section("savings", -1, width()))
 	if b != nil {
 		fmt.Fprintf(w, "  startup context   %s → %s  %s\n", ui.Tokens(b.Startup), ui.Tokens(st.Startup), delta(b.Startup, st.Startup))
-		if st.SinceInit > 0 && b.PerRequest > 0 {
-			fmt.Fprintf(w, "  billed per request %s → %s  %s  (%d sessions since init)\n", ui.Tokens(b.PerRequest), ui.Tokens(st.PerRequest), delta(b.PerRequest, st.PerRequest), st.SinceInit)
+		if st.EnoughData {
+			fmt.Fprintf(w, "  billed per request %s → %s  %s  %s\n", ui.Tokens(b.PerRequestMain), ui.Tokens(st.PerRequestMain), delta(b.PerRequestMain, st.PerRequestMain),
+				ui.Dim.Render(fmt.Sprintf("(%d main-session requests since init)", st.RequestsMain)))
+			fmt.Fprintf(w, "  cache hits        %s → %s  %s\n", pct(b.HitRateMain), pct(st.HitRateMain), ui.Dim.Render(fmt.Sprintf("(%s without %s after an idle gap)", pct(st.HitRateMainActive), plural(len(st.IdleMisses), "request"))))
 		} else {
-			fmt.Fprintln(w, "  "+ui.Dim.Render("billed savings show after your next sessions"))
+			fmt.Fprintln(w, "  billed per request "+ui.Dim.Render(notEnough(b, u)))
 		}
+	}
+	if st.SubRequests > 0 {
+		fmt.Fprintf(w, "  subagents         %s, %s tokens %s\n", plural(st.SubRequests, "request"), ui.Tokens(st.SubTokens), ui.Dim.Render("(not in the comparison)"))
+	}
+	for i, m := range st.IdleMisses {
+		if i == 5 {
+			fmt.Fprintln(w, "  "+ui.Dim.Render(fmt.Sprintf("  and %d more", len(st.IdleMisses)-5)))
+			break
+		}
+		fmt.Fprintf(w, "  idle miss         %s  %s tokens re-cached  %s\n", m.Time.Local().Format("2 Jan 15:04"), ui.Tokens(m.Tokens), ui.Dim.Render(shortID(m.Session)))
 	}
 	if st.DocReads > 0 {
 		fmt.Fprintf(w, "  documents         %d reads, about %s fewer tokens read, net %s\n", st.DocReads, ui.Tokens(st.DocSaved), ui.Dim.Render("(PDF, Word, PowerPoint, Excel)"))
@@ -125,6 +183,13 @@ func runStatus(a *app, _ []string) error {
 	fmt.Fprintln(w, "  "+on)
 	fmt.Fprintln(w, "  "+ui.Dim.Render("tacet on|off <feature>"))
 	return nil
+}
+
+func shortID(id string) string {
+	if len(id) > 8 {
+		return id[:8]
+	}
+	return id
 }
 
 func delta(before, after int) string {

@@ -55,6 +55,9 @@ type reportData struct {
 	Requests    int
 	PerRequest  string
 	HitRate     string
+	HitActive   string // main-session hit rate without idle-gap requests
+	MainReqs    int
+	IdleCount   int
 	Misses      []reportBar
 	MissCount   int
 	MissTokens  string
@@ -133,7 +136,8 @@ func buildReport(root string) (*reportData, error) {
 	d := &reportData{
 		Version: version, Root: root, Generated: time.Now().Format("2 Jan 2006 15:04"),
 		StartupSum: ui.Tokens(s.Startup.Total), Sessions: u.Sessions, Requests: u.Requests,
-		PerRequest: ui.Tokens(u.PerRequest()), HitRate: pct(u.HitRate),
+		PerRequest: ui.Tokens(u.PerRequestMain()), HitRate: pct(u.HitRateMain()),
+		HitActive: pct(u.HitRateMainActive()), MainReqs: u.MainRequests, IdleCount: len(idleMisses(u)),
 	}
 
 	groups := map[string]int{}
@@ -149,10 +153,13 @@ func buildReport(root string) (*reportData, error) {
 		d.HasBaseline = true
 		d.BaseDate = b.Time.Local().Format("2 Jan 2006")
 		d.Compare = append(d.Compare, compare("startup context", b.Startup, s.Startup.Total, ui.Tokens, true))
-		if u.Sessions > 0 && b.PerRequest > 0 {
-			d.Compare = append(d.Compare, compare("tokens per request", b.PerRequest, u.PerRequest(), ui.Tokens, true))
-			d.Compare = append(d.Compare, compareRate("cache hits", b.HitRate, u.HitRate))
+		if enoughData(b, u) {
+			d.Compare = append(d.Compare, compare("tokens per request", b.PerRequestMain, u.PerRequestMain(), ui.Tokens, true))
+			d.Compare = append(d.Compare, compareRate("cache hits", b.HitRateMain, u.HitRateMain()))
+		} else {
+			d.Compare = append(d.Compare, reportCompare{Label: "tokens per request", Before: ui.Tokens(b.PerRequestMain), After: notEnough(b, u), Class: "same"})
 		}
+		d.Compare = append(d.Compare, reportCompare{Label: "main-session requests", Before: fmt.Sprint(b.RequestsMain), After: fmt.Sprint(u.MainRequests), Class: "same"})
 		d.Compare = append(d.Compare, reportCompare{Label: "sessions measured", Before: fmt.Sprint(b.Sessions), After: fmt.Sprint(u.Sessions), Class: "same"})
 	}
 

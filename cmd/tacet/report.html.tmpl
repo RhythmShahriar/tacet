@@ -96,8 +96,8 @@ footer a { color: inherit; }
 
 <div class="tiles">
   <div class="tile"><div class="k">startup context</div><div class="v dot num">{{.StartupSum}}</div><div class="s">tokens before your first prompt</div></div>
-  <div class="tile"><div class="k">per request</div><div class="v num">{{.PerRequest}}</div><div class="s">{{plural .Requests "request"}} in {{plural .Sessions "session"}}{{if .HasBaseline}} since init{{end}}</div></div>
-  <div class="tile"><div class="k">cache hits</div><div class="v num">{{.HitRate}}</div><div class="s">of input read from the prompt cache</div></div>
+  <div class="tile"><div class="k">per request</div><div class="v num">{{.PerRequest}}</div><div class="s">{{plural .MainReqs "main-session request"}} in {{plural .Sessions "session"}}{{if .HasBaseline}} since init{{end}}</div></div>
+  <div class="tile"><div class="k">cache hits</div><div class="v num">{{.HitRate}}</div><div class="s">of main-session input read from the prompt cache, {{.HitActive}} without {{plural .IdleCount "idle gap"}}</div></div>
   <div class="tile"><div class="k">documents</div><div class="v dot num">{{.DocSaved}}</div><div class="s">fewer tokens over {{plural .DocReads "read"}}, net</div></div>
 </div>
 
@@ -111,7 +111,7 @@ footer a { color: inherit; }
       {{end}}
     </table>
   </div>
-  {{if eq .Sessions 0}}<p class="note">Billed savings show after your next sessions in Claude Code.</p>{{end}}
+  <p class="note">Billed numbers count main sessions only. Subagents start small and fresh, so they are shown on their own below.</p>
   {{else}}
   <p class="empty">No baseline yet. Run <code>tacet init</code> once and this compares every later session against it.</p>
   {{end}}
@@ -145,7 +145,7 @@ footer a { color: inherit; }
   <h2>Subagents</h2>
   <div class="card">
     {{if .Subagents}}
-    <div class="row"><div><div class="label">{{plural .Subagents "subagent"}} made {{plural .SubRequests "request"}}</div><div class="detail">{{.SubTokens}} of {{.AllTokens}} tokens</div></div><div class="num">{{.SubShare}}</div><div class="bar"><span style="width:{{printf "%.1f" .SubPct}}%"></span></div></div>
+    <div class="row"><div><div class="label">{{plural .Subagents "subagent"}} made {{plural .SubRequests "request"}}</div><div class="detail">{{.SubTokens}} of {{.AllTokens}} tokens, not in the comparison</div></div><div class="num">{{.SubShare}}</div><div class="bar"><span style="width:{{printf "%.1f" .SubPct}}%"></span></div></div>
     {{else}}<p class="empty">No subagents ran in these sessions.</p>{{end}}
   </div>
 </section>

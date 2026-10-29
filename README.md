@@ -89,6 +89,7 @@ Model: Claude Haiku. Claude Code 2.1.311. Date: 2026-10-29. Denying reads of loc
 ## Honest limits
 
 - **Token counts are estimates.** `tacet measure`, `tacet status` and the report count tokens offline. They are close, not exact.
+- **Billed savings need data.** `tacet status` compares main-session requests only (subagents start small and fresh) and shows a figure only after 20 of them since init. Subagent usage is listed on its own line.
 - **Savings depend on your setup.** The numbers above come from the scenarios listed. A project with a short `CLAUDE.md` and no documents has little to save.
 - **Office files must be named.** Claude Code refuses Word, PowerPoint and Excel files before any hook runs, so tacet can only help when your prompt names the file or the file is there when the session starts.
 - **Scanned PDFs pass through.** A PDF with no text layer is read by Claude Code as usual.

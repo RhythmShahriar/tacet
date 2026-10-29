@@ -157,10 +157,11 @@ func itoa(n int) string { b, _ := json.Marshal(n); return string(b) }
 
 // Miss is a request that reprocessed most of its context.
 type Miss struct {
-	Session string    `json:"session"`
-	Time    time.Time `json:"time"`
-	Cause   string    `json:"cause"` // model-switch, idle, compact, other
-	Tokens  int       `json:"tokens"`
+	Session  string    `json:"session"`
+	Time     time.Time `json:"time"`
+	Cause    string    `json:"cause"` // model-switch, idle, compact, other
+	Tokens   int       `json:"tokens"`
+	Subagent bool      `json:"subagent,omitempty"`
 }
 
 // Usage is what past sessions billed.
@@ -182,6 +183,18 @@ type Usage struct {
 	SubRequests  int            `json:"subagent_requests"`
 	SubTokens    int            `json:"subagent_tokens"`
 	FirstRequest int            `json:"first_request"` // average context of a session's first request
+
+	// The main sessions alone, without subagents. Subagents start small
+	// and fresh, so mixing them in skews any before and after comparison.
+	MainRequests   int `json:"main_requests"`
+	MainInput      int `json:"main_input"`
+	MainCacheWrite int `json:"main_cache_write"`
+	MainCacheRead  int `json:"main_cache_read"`
+	// Main-session requests that missed the cache after an idle gap and
+	// the context and cache reads they carried.
+	MainIdle     int `json:"main_idle_misses"`
+	MainIdleIn   int `json:"main_idle_input"`
+	MainIdleRead int `json:"main_idle_cache_read"`
 }
 
 // PerRequest is the average input a request processed.
@@ -192,6 +205,33 @@ func (u *Usage) PerRequest() int {
 	return (u.Input + u.CacheWrite + u.CacheRead) / u.Requests
 }
 
+// PerRequestMain is the average input a main-session request processed.
+func (u *Usage) PerRequestMain() int {
+	if u.MainRequests == 0 {
+		return 0
+	}
+	return (u.MainInput + u.MainCacheWrite + u.MainCacheRead) / u.MainRequests
+}
+
+// HitRateMain is the share of main-session input read from the cache.
+func (u *Usage) HitRateMain() float64 {
+	return rate(u.MainCacheRead, u.MainInput+u.MainCacheWrite+u.MainCacheRead)
+}
+
+// HitRateMainActive is HitRateMain without the requests that came back
+// after an idle gap: the cache had expired, so no setup could have kept
+// them warm.
+func (u *Usage) HitRateMainActive() float64 {
+	return rate(u.MainCacheRead-u.MainIdleRead, u.MainInput+u.MainCacheWrite+u.MainCacheRead-u.MainIdleIn)
+}
+
+func rate(part, whole int) float64 {
+	if whole <= 0 {
+		return 0
+	}
+	return float64(part) / float64(whole)
+}
+
 // MeasureUsage reads the newest limit transcripts of root (0 for all)
 // from since on.
 func MeasureUsage(root string, since time.Time, limit int) *Usage {
@@ -199,6 +239,30 @@ func MeasureUsage(root string, since time.Time, limit int) *Usage {
 	if limit > 0 && len(paths) > limit {
 		paths = paths[len(paths)-limit:]
 	}
+	return Sum(readSessions(paths), since)
+}
+
+// MeasureUsageBefore adds up what was billed before until, from the
+// newest limit transcripts last written before it: what a baseline taken
+// at until saw. The first transcript written after until is read too, as
+// the session tacet init ran in may have kept going.
+func MeasureUsageBefore(root string, until time.Time, limit int) *Usage {
+	var before, after []string
+	for _, p := range claude.Transcripts(root) {
+		if fi, err := os.Stat(p); err == nil && fi.ModTime().Before(until) {
+			before = append(before, p)
+		} else if len(after) == 0 {
+			after = append(after, p)
+		}
+	}
+	if limit > 0 && len(before) > limit {
+		before = before[len(before)-limit:]
+	}
+	return SumRange(readSessions(append(before, after...)), time.Time{}, until)
+}
+
+// readSessions parses session transcripts and their subagents.
+func readSessions(paths []string) []*claude.Session {
 	type job struct {
 		path string
 		sub  bool
@@ -237,12 +301,17 @@ func MeasureUsage(root string, since time.Time, limit int) *Usage {
 			kept = append(kept, s)
 		}
 	}
-	sessions = kept
-	return Sum(sessions, since)
+	return kept
 }
 
-// Sum adds up sessions. Exported for tests and the report.
+// Sum adds up sessions from since on. Exported for tests and the report.
 func Sum(sessions []*claude.Session, since time.Time) *Usage {
+	return SumRange(sessions, since, time.Time{})
+}
+
+// SumRange adds up the requests from since up to until; a zero until
+// has no end.
+func SumRange(sessions []*claude.Session, since, until time.Time) *Usage {
 	u := &Usage{MCPCalls: map[string]int{}, SkillCalls: map[string]int{}, DocReads: map[string]int{}, Since: since}
 	firsts, nfirst := 0, 0
 	for _, s := range sessions {
@@ -250,7 +319,7 @@ func Sum(sessions []*claude.Session, since time.Time) *Usage {
 		var prev *claude.Turn
 		for i := range s.Turns {
 			t := &s.Turns[i]
-			if t.Role != "assistant" || t.Time.Before(since) {
+			if t.Role != "assistant" || t.Time.Before(since) || (!until.IsZero() && !t.Time.Before(until)) {
 				continue
 			}
 			if !counted {
@@ -266,6 +335,11 @@ func Sum(sessions []*claude.Session, since time.Time) *Usage {
 			if s.Subagent {
 				u.SubRequests++
 				u.SubTokens += t.Usage.Total()
+			} else {
+				u.MainRequests++
+				u.MainInput += t.Usage.Input
+				u.MainCacheWrite += t.Usage.CacheWrite
+				u.MainCacheRead += t.Usage.CacheRead
 			}
 			u.Requests++
 			u.Input += t.Usage.Input
@@ -286,16 +360,19 @@ func Sum(sessions []*claude.Session, since time.Time) *Usage {
 				}
 			}
 			if m, ok := miss(prev, t); ok {
-				m.Session = s.ID
+				m.Session, m.Subagent = s.ID, s.Subagent
 				u.Misses = append(u.Misses, m)
 				u.MissTokens += m.Tokens
+				if m.Cause == "idle" && !s.Subagent {
+					u.MainIdle++
+					u.MainIdleIn += t.Usage.Input + t.Usage.CacheWrite + t.Usage.CacheRead
+					u.MainIdleRead += t.Usage.CacheRead
+				}
 			}
 			prev = t
 		}
 	}
-	if in := u.Input + u.CacheWrite + u.CacheRead; in > 0 {
-		u.HitRate = float64(u.CacheRead) / float64(in)
-	}
+	u.HitRate = rate(u.CacheRead, u.Input+u.CacheWrite+u.CacheRead)
 	if nfirst > 0 {
 		u.FirstRequest = firsts / nfirst
 	}
