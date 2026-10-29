@@ -67,8 +67,18 @@ func runAudit(a *app, _ []string) error {
 }
 
 func runDocs(a *app, args []string) error {
-	if len(args) > 0 && args[0] != "lint" {
-		return fmt.Errorf("%w: tacet docs lint", errUsage)
+	if len(args) > 0 {
+		switch args[0] {
+		case "fix":
+			return runDocsFix(a, args[1:])
+		case "init":
+			return runDocsInit(a, args[1:])
+		case "sync":
+			return runDocsSync(a, args[1:])
+		case "lint":
+		default:
+			return fmt.Errorf("%w: tacet docs lint|fix|init|sync", errUsage)
+		}
 	}
 	s, err := doScan(a.root(), time.Time{})
 	if err != nil {
