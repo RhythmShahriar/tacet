@@ -15,6 +15,7 @@ import (
 	"github.com/RhythmShahriar/tacet/docs/lint"
 	"github.com/RhythmShahriar/tacet/internal/config"
 	"github.com/RhythmShahriar/tacet/measure"
+	"github.com/RhythmShahriar/tacet/skills"
 )
 
 // recentSessions is how many past transcripts a scan reads.
@@ -41,6 +42,8 @@ func doScan(root string, since time.Time) (*scan, error) {
 	s := &scan{Root: root, Startup: st, Usage: u, set: set}
 	s.Docs = lint.Check(set)
 	s.Audit = audit.Run(audit.Input{Root: root, Startup: st, Usage: u})
+	s.Audit = append(s.Audit, skills.Suggest(root, set, s.Docs, config.Load(root).On("skills"))...)
+	core.Rank(s.Audit)
 	return s, nil
 }
 
