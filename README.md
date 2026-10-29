@@ -89,6 +89,7 @@ Model: Claude Haiku. Claude Code 2.1.311. Date: 2026-10-29. Denying reads of loc
 ## Honest limits
 
 - **Token counts are estimates.** `tacet measure`, `tacet status` and the report count tokens offline. They are close, not exact.
+- **Billed savings need data.** `tacet status` compares main-session requests only (subagents start small and fresh) and shows a figure only after 20 of them since init. Subagent usage is listed on its own line.
 - **Savings depend on your setup.** The numbers above come from the scenarios listed. A project with a short `CLAUDE.md` and no documents has little to save.
 - **Office files must be named.** Claude Code refuses Word, PowerPoint and Excel files before any hook runs, so tacet can only help when your prompt names the file or the file is there when the session starts.
 - **Scanned PDFs pass through.** A PDF with no text layer is read by Claude Code as usual.
@@ -118,15 +119,12 @@ Features for `tacet on` and `tacet off`:
 
 | Feature | Default | What it does |
 |---|---|---|
-| `convert` | on | PDF and Office files read as Markdown |
-| `outline` | on | long documents open on an outline of their sections |
+| `convert` | on | PDF and Office files read as Markdown, long ones on an outline of their sections |
 | `guard` | on | blocks reads of secrets |
 | `handoff` | on | `SESSION.md` written before compact and at session end |
 | `audio` | on | audio read as a transcript, asking before the first download |
 | `map` | on | code map for the MCP tools |
 | `skills` | on | suggests skills from repeated instructions |
-| `speak` | off | reads the final reply aloud |
-| `trim` | off | filters noisy command output |
 
 The same switches live in `.tacet/config.yaml`, with `audit_every` for the number of sessions between quiet re-audits. Every command takes `--json` for machine output, `-y` to skip prompts and `-C <dir>` to run in another folder.
 

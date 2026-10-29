@@ -18,15 +18,12 @@ import (
 
 // Features tacet can switch on and off, with their defaults.
 var Features = map[string]bool{
-	"convert": true,  // PDF and Office files read as Markdown
-	"outline": true,  // long documents open on an outline of their sections
-	"audio":   true,  // audio read as a transcript (asks before the first download)
-	"guard":   true,  // block reads of secrets
-	"handoff": true,  // SESSION.md written before compact and at session end
-	"map":     true,  // code map for the MCP tools
-	"skills":  true,  // suggest skills from repeated instructions
-	"speak":   false, // read the final reply aloud
-	"trim":    false, // filter noisy command output
+	"convert": true, // PDF and Office files read as Markdown, long ones on an outline
+	"audio":   true, // audio read as a transcript (asks before the first download)
+	"guard":   true, // block reads of secrets
+	"handoff": true, // SESSION.md written before compact and at session end
+	"map":     true, // code map for the MCP tools
+	"skills":  true, // suggest skills from repeated instructions
 }
 
 // FeatureNames lists the features in a stable order.
@@ -51,7 +48,9 @@ func Dir(root string) string { return filepath.Join(root, ".tacet") }
 
 func path(root string) string { return filepath.Join(Dir(root), "config.yaml") }
 
-// Load reads the config, filling defaults for anything unset.
+// Load reads the config, filling defaults for anything unset. Features
+// tacet no longer has (speak, trim, outline) are dropped, so an old
+// config still loads.
 func Load(root string) *Config {
 	c := &Config{Features: map[string]bool{}}
 	if b, err := os.ReadFile(path(root)); err == nil {
@@ -59,6 +58,11 @@ func Load(root string) *Config {
 	}
 	if c.Features == nil {
 		c.Features = map[string]bool{}
+	}
+	for k := range c.Features {
+		if _, ok := Features[k]; !ok {
+			delete(c.Features, k)
+		}
 	}
 	for k, v := range Features {
 		if _, ok := c.Features[k]; !ok {

@@ -38,7 +38,7 @@ func init() {
 	commands = []command{
 		{"init", "set tacet up on this project (run once)", runInit, false},
 		{"status", "what tacet saved and what is waiting for you", runStatus, false},
-		{"on", "turn a feature on: tacet on speak", runOn, false},
+		{"on", "turn a feature on: tacet on audio", runOn, false},
 		{"off", "turn a feature off: tacet off convert", runOff, false},
 		{"undo", "revert tacet's last change", runUndo, false},
 		{"uninstall", "remove tacet from this project and restore your files", runUninstall, false},

@@ -70,7 +70,7 @@ most 72 characters, small and focused. The scope names the area of the tree:
 | `core`, `cli`, `ui` | shared types, commands and the terminal theme |
 | `claude`, `tokens`, `measure` | Claude Code's files, token estimates and measurements |
 | `audit`, `docs`, `skills`, `memory` | setup findings, instruction files, skills and memory |
-| `convert`, `audio`, `speak`, `guard`, `handoff`, `trim`, `map` | the engines the hooks run |
+| `convert`, `audio`, `guard`, `handoff`, `map` | the engines the hooks run |
 | `hook`, `mcp`, `plugin`, `report` | hooks, the MCP server, the plugin and the HTML report |
 | `bench`, `testbed`, `ci`, `release`, `deps` | benchmarks, fixtures, workflows, packaging and dependencies |
 
