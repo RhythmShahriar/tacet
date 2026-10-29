@@ -17,3 +17,10 @@
 .env
 .env.*
 !.env.example
+
+# Benchmark: per-mode installs (each holds a link to the Claude login),
+# downloads and build output. Results under testbed/bench/results/ are kept.
+/testbed/bench/state/
+/testbed/bench/cache/
+/testbed/bench/tasks/*/project/target/
+.credentials.json
