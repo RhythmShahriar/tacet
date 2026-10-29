@@ -19,7 +19,10 @@ for ((i = 1; i <= reps; i++)); do
 		# every run pays for a first read, as a real session does.
 		nonce="[bench run $RANDOM$RANDOM]"
 		extra=()
-		[ "$mode" = on ] && extra=(--plugin-dir "$plugin")
+		# ON_ARGS replaces the plugin for features that are settings, not hooks.
+		if [ "$mode" = on ]; then
+			if [ -n "${ON_ARGS:-}" ]; then read -r -a extra <<<"$ON_ARGS"; else extra=(--plugin-dir "$plugin"); fi
+		fi
 		if ! timeout 400 claude -p --model "$model" "${extra[@]}" --allowedTools "Read Grep Glob Bash" \
 			--max-turns 12 --output-format json "$nonce $prompt" >"$out" 2>/dev/null; then
 			echo "{\"mode\":\"$mode\",\"error\":true}"
