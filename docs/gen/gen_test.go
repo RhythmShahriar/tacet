@@ -181,3 +181,33 @@ func TestSyncLimitsAndErrors(t *testing.T) {
 		t.Fatal("unknown target should fail")
 	}
 }
+
+func TestCommandsFromLanguages(t *testing.T) {
+	runs := func(files map[string]string) string {
+		var got []string
+		for _, c := range Commands(project(t, files)) {
+			got = append(got, c.Run)
+		}
+		return strings.Join(got, ",")
+	}
+	py := "[project]\nname = \"x\"\n\n[dependency-groups]\ndev = [\"pytest\", \"mypy\"]\n\n[tool.ruff]\nline-length = 100\n"
+	cases := []struct {
+		files map[string]string
+		want  string
+	}{
+		{map[string]string{"pyproject.toml": py, "uv.lock": ""}, "uv sync,uv run pytest,uv run ruff check .,uv run ruff format .,uv run mypy ."},
+		{map[string]string{"pyproject.toml": py, "poetry.lock": ""}, "poetry install,poetry run pytest,poetry run ruff check .,poetry run ruff format .,poetry run mypy ."},
+		{map[string]string{"pyproject.toml": "[project]\nname = \"x\"\n\n[tool.poe.tasks]\ntest = \"pytest\"\n", "uv.lock": ""}, "uv sync,uv run poe test"},
+		{map[string]string{"Cargo.toml": "[workspace]\nmembers = [\"a\"]\n"}, "cargo build --workspace,cargo test --workspace,cargo clippy --workspace --all-targets,cargo fmt --check"},
+		{map[string]string{"Cargo.toml": "[package]\n", ".cargo/config.toml": "[alias]\nlint = \"clippy -- -D warnings\"\n"}, "cargo lint,cargo build,cargo test,cargo fmt --check"},
+		// A Makefile with only build still gets the language's test command.
+		{map[string]string{"Makefile": "build:\n\tcargo build\n", "Cargo.toml": "[package]\n"}, "make build,cargo test,cargo clippy --all-targets,cargo fmt --check"},
+		{map[string]string{"Makefile": "build:\n\tgo build\ntest:\n\tgo test\n", "go.mod": "module x\n"}, "make build,make test,go vet ./..."},
+		{map[string]string{"README.md": "x"}, ""},
+	}
+	for _, c := range cases {
+		if got := runs(c.files); got != c.want {
+			t.Errorf("%v:\n got  %s\n want %s", c.files, got, c.want)
+		}
+	}
+}
