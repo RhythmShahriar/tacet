@@ -134,17 +134,13 @@ func File(root, path string) (*Result, error) {
 	if fi.Size() > MaxSize {
 		return nil, fmt.Errorf("%s is over %d MB", filepath.Base(path), MaxSize>>20)
 	}
-	sum, err := hashFile(path)
+	sum, err := Sum(root, path)
 	if err != nil {
 		return nil, err
 	}
-	base := strings.TrimSuffix(filepath.Base(path), filepath.Ext(path))
-	out := filepath.Join(Dir(root), safeName(base)+"-"+sum[:12]+".md")
-	if b, err := os.ReadFile(out); err == nil { // #nosec G304 -- tacet's own cache
-		if len(b) == 0 {
-			return nil, ErrScanned
-		}
-		return &Result{Source: path, Path: out, Cached: true, Chars: len(b), FirstPart: FirstPartLimit(b), Outline: existing(outlinePath(out))}, nil
+	out := CachePath(root, path, sum, ".md")
+	if r, err := cached(path, out); r != nil || err != nil {
+		return r, err
 	}
 	mdOnce.Do(func() { md = markitdown.New() })
 	r, err := md.ConvertFile(path)
@@ -180,6 +176,25 @@ func File(root, path string) (*Result, error) {
 	return res, nil
 }
 
+// CachePath is where the text made from path's bytes (sum) is kept: the
+// file name, the first 12 hex digits of the hash and ext.
+func CachePath(root, path, sum, ext string) string {
+	base := strings.TrimSuffix(filepath.Base(path), filepath.Ext(path))
+	return filepath.Join(Dir(root), SafeName(base)+"-"+sum[:12]+ext)
+}
+
+// cached returns an earlier conversion at out, nil when there is none.
+func cached(path, out string) (*Result, error) {
+	b, err := os.ReadFile(out) // #nosec G304 -- tacet's own cache
+	if err != nil {
+		return nil, nil
+	}
+	if len(b) == 0 {
+		return nil, ErrScanned
+	}
+	return &Result{Source: path, Path: out, Cached: true, Chars: len(b), FirstPart: FirstPartLimit(b), Outline: existing(outlinePath(out))}, nil
+}
+
 func hashFile(p string) (string, error) {
 	f, err := os.Open(p) // #nosec G304 -- a document the agent asked to read
 	if err != nil {
@@ -193,7 +208,8 @@ func hashFile(p string) (string, error) {
 	return hex.EncodeToString(h.Sum(nil)), nil
 }
 
-func safeName(s string) string {
+// SafeName keeps letters, digits and -_. of s, so it is safe in a file name.
+func SafeName(s string) string {
 	var b strings.Builder
 	for _, r := range s {
 		switch {
@@ -310,14 +326,18 @@ func partRanges(doc string) []string {
 }
 
 // Mentions finds document paths named in a prompt that exist under root.
-func Mentions(root, cwd, prompt string) []string {
+func Mentions(root, cwd, prompt string) []string { return MentionsOf(root, cwd, prompt, Supported) }
+
+// MentionsOf finds paths named in a prompt that exist under root and
+// that supported accepts.
+func MentionsOf(root, cwd, prompt string, supported func(string) bool) []string {
 	seen := map[string]bool{}
 	var out []string
 	for _, f := range strings.FieldsFunc(prompt, func(r rune) bool {
 		return r == ' ' || r == '\n' || r == '\t' || r == '"' || r == '\'' || r == '`' || r == '(' || r == ')' || r == ',' || r == ';'
 	}) {
 		f = strings.TrimRight(f, ".:?!")
-		if !Supported(f) {
+		if !supported(f) {
 			continue
 		}
 		for _, base := range []string{cwd, root} {
