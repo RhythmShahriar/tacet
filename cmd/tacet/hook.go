@@ -33,6 +33,7 @@ type hookInput struct {
 	Source         string          `json:"source"`
 	ToolName       string          `json:"tool_name"`
 	ToolInput      json.RawMessage `json:"tool_input"`
+	ToolResponse   json.RawMessage `json:"tool_response"`
 	LastMessage    string          `json:"last_assistant_message"`
 	Prompt         string          `json:"prompt"`
 	StopHookActive bool            `json:"stop_hook_active"`
@@ -108,10 +109,14 @@ func handle(root string, cfg *config.Config, event string, in *hookInput) (any, 
 			return deny(fmt.Sprintf("tacet guard: this would print %s, which holds secrets. Ask the person for the one value you need instead.", f)), nil
 		}
 		return nil, nil
+	case "pre-search":
+		return preSearch(root, cfg, in), nil
+	case "post-output":
+		return postOutput(root, cfg, in), nil
 	case "prompt":
 		return promptDocs(root, cfg, in), nil
 	case "pre-compact":
-		return nil, writeHandoff(root, cfg, in)
+		return nil, preCompact(root, cfg, in)
 	case "session-end":
 		err := writeHandoff(root, cfg, in)
 		countSession(root, cfg)
@@ -136,6 +141,9 @@ func sessionStart(root string, cfg *config.Config, in *hookInput) any {
 	}
 	if d := sessionDocs(root, cfg); d != "" {
 		parts = append(parts, d)
+	}
+	if c := compactContext(root, cfg, in); c != "" {
+		parts = append(parts, c)
 	}
 	if len(parts) == 0 {
 		return nil

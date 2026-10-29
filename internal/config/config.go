@@ -24,6 +24,8 @@ var Features = map[string]bool{
 	"handoff": true, // SESSION.md written before compact and at session end
 	"map":     true, // code map for the MCP tools
 	"skills":  true, // suggest skills from repeated instructions
+
+	"bigoutput": false, // experimental: keep long Bash and WebFetch output in .tacet/out
 }
 
 // FeatureNames lists the features in a stable order.
