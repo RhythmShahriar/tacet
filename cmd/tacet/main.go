@@ -46,7 +46,7 @@ func init() {
 		{"audit", "setup findings, each with a fix", runAudit, false},
 		{"map", "ranked code map: tacet map [--budget N] [--dir path]", runMap, false},
 		{"docs", "instruction files: tacet docs lint|fix|init|sync", runDocs, false},
-		{"skills", "repeated requests that could be skills, with counts", runSkills, false},
+		{"skills", "skill ideas from repeated requests; tacet skills new|check", runSkills, false},
 		{"check", "docs and audit for CI; exits 1 on findings", runCheck, false},
 		{"transcribe", "audio to a Markdown transcript: tacet transcribe <file>", runTranscribe, false},
 		{"report", "write an HTML report of what tacet saved: .tacet/report.html", runReport, false},
