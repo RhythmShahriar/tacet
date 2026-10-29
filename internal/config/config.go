@@ -18,15 +18,17 @@ import (
 
 // Features tacet can switch on and off, with their defaults.
 var Features = map[string]bool{
-	"convert": true,  // PDF and Office files read as Markdown
-	"outline": true,  // long documents open on an outline of their sections
-	"audio":   true,  // audio read as a transcript (asks before the first download)
-	"guard":   true,  // block reads of secrets
-	"handoff": true,  // SESSION.md written before compact and at session end
-	"map":     true,  // code map for the MCP tools
-	"skills":  true,  // suggest skills from repeated instructions
-	"speak":   false, // read the final reply aloud
-	"trim":    false, // filter noisy command output
+	"convert":  true,  // PDF and Office files read as Markdown
+	"outline":  true,  // long documents open on an outline of their sections
+	"audio":    true,  // audio read as a transcript (asks before the first download)
+	"guard":    true,  // block reads of secrets
+	"handoff":  true,  // SESSION.md written before compact and at session end
+	"map":      true,  // code map for the MCP tools
+	"skills":   true,  // suggest skills from repeated instructions
+	"speak":    false, // read the final reply aloud
+	"trim":     false, // filter noisy command output
+	"feedback": false, // lint and type errors shown right after an edit
+	"testgate": false, // failing tests keep the agent from finishing
 }
 
 // FeatureNames lists the features in a stable order.

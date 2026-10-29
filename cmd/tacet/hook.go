@@ -117,6 +117,10 @@ func handle(root string, cfg *config.Config, event string, in *hookInput) (any, 
 		err := writeHandoff(root, cfg, in)
 		countSession(root, cfg)
 		return nil, err
+	case "post-edit":
+		return postEdit(root, cfg, in), nil
+	case "test-gate":
+		return testGate(root, cfg, in), nil
 	case "stop":
 		if cfg.On("speak") && !in.StopHookActive && in.LastMessage != "" {
 			return nil, speak.Say(in.LastMessage)

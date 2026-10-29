@@ -38,7 +38,14 @@ var hookEvents = []struct{ event, matcher, name string }{
 	{"PreCompact", "", "pre-compact"},
 	{"SessionEnd", "", "session-end"},
 	{"Stop", "", "stop"},
+	{"PostToolUse", "Edit|Write|MultiEdit", "post-edit"},
+	{"Stop", "", "test-gate"},
 }
+
+// hookTimeouts gives hooks that run the project's own tools more than
+// the default 30 seconds: checkers are capped at 20 seconds each, a test
+// run at 240.
+var hookTimeouts = map[string]int{"post-edit": 60, "test-gate": 300}
 
 // Write generates the marketplace and plugin under dir for the tacet
 // binary at bin.
@@ -83,8 +90,12 @@ func Write(dir, bin, version string) error {
 func hooks(bin string) map[string]any {
 	ev := map[string][]any{}
 	for _, h := range hookEvents {
+		timeout := 30
+		if t, ok := hookTimeouts[h.name]; ok {
+			timeout = t
+		}
 		entry := map[string]any{"hooks": []any{map[string]any{
-			"type": "command", "command": quote(bin) + " hook " + h.name, "timeout": 30,
+			"type": "command", "command": quote(bin) + " hook " + h.name, "timeout": timeout,
 		}}}
 		if h.matcher != "" {
 			entry["matcher"] = h.matcher

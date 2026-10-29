@@ -127,6 +127,8 @@ Features for `tacet on` and `tacet off`:
 | `skills` | on | suggests skills from repeated instructions |
 | `speak` | off | reads the final reply aloud |
 | `trim` | off | filters noisy command output |
+| `feedback` | off | runs the project's own linter or type checker (ruff, pyright, cargo check, tsc, go vet) on each edited file and shows the agent only the failures |
+| `testgate` | off | runs the tests when the agent tries to finish after editing code and sends it back on failures, at most twice a session |
 
 The same switches live in `.tacet/config.yaml`, with `audit_every` for the number of sessions between quiet re-audits. Every command takes `--json` for machine output, `-y` to skip prompts and `-C <dir>` to run in another folder.
 
