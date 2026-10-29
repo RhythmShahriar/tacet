@@ -1,0 +1,9 @@
+[project]
+name = "tally"
+version = "0.3.0"
+description = "Invoices with lines, discounts and tax"
+requires-python = ">=3.9"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

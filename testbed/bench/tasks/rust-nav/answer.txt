@@ -1,0 +1,1 @@
+Defined in crates/cli/src/decompress.rs (which also calls it); called from crates/core/search.rs and crates/core/flags/hiargs.rs.

@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Copyright (c) 2026 Rhythm Shahriar <me@rhy.io>
+# SPDX-License-Identifier: MIT
+#
+# cargo in Docker for machines without it. compare.sh puts shims/ on
+# PATH only when the real command is missing, for every mode alike.
+set -euo pipefail
+image=rust:1.83-slim
+root=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
+rel=${PWD#"$root"}
+exec docker run --rm -i -u "$(id -u):$(id -g)" -e HOME=/tmp -e CARGO_HOME=/tmp/cargo \
+	-v "$root:/w" -w "/w$rel" "$image" cargo "$@"

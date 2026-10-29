@@ -1,0 +1,1 @@
+In oauth-guide.docx, the section about refreshing an access token has an implementer note. How many uses does it allow per refresh token and where is reuse logged?

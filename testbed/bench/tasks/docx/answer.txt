@@ -1,0 +1,1 @@
+Each refresh token gets 9 uses; reuse is logged to the tokens-audit channel.

@@ -1,0 +1,6 @@
+Defined in modules/caddyhttp/caddyhttp.go. Called from:
+- modules/caddyhttp/fileserver/matcher.go
+- modules/caddyhttp/fileserver/browsetplcontext.go
+- modules/caddyhttp/fileserver/browse.go
+- modules/caddyhttp/reverseproxy/fastcgi/fastcgi.go
+- modules/caddyhttp/fileserver/staticfiles.go
