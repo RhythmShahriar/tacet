@@ -13,6 +13,9 @@ builds:
     goos: [linux, darwin, windows]
     goarch: [amd64, arm64]
     flags: [-trimpath]
+    # Leaves out the GPL-licensed grammar scanners gotreesitter ships for
+    # languages tacet doesn't index, so the binary stays MIT clean.
+    tags: [gotreesitter_no_copyleft]
     ldflags: ["-s -w -X main.version={{ .Version }}"]
     mod_timestamp: "{{ .CommitTimestamp }}"
 

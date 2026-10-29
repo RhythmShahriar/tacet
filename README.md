@@ -46,7 +46,7 @@ Both scripts download the build for your system from the latest release, check i
 |---|---|
 | Homebrew | `brew install rhythmshahriar/tap/tacet` |
 | Scoop | `scoop bucket add rhythmshahriar https://github.com/RhythmShahriar/scoop-bucket` then `scoop install tacet` |
-| Go | `go install github.com/RhythmShahriar/tacet/cmd/tacet@latest` |
+| Go | `go install -tags gotreesitter_no_copyleft github.com/RhythmShahriar/tacet/cmd/tacet@latest` |
 
 To check a release archive by hand, run [`scripts/verify-release.sh`](scripts/verify-release.sh) next to the archive, `checksums.txt` and `checksums.txt.sigstore.json`.
 
@@ -137,7 +137,7 @@ The same switches live in `.tacet/config.yaml`, with `audit_every` for the numbe
 - uses: actions/setup-go@v5
   with:
     go-version: stable
-- run: go install github.com/RhythmShahriar/tacet/cmd/tacet@latest
+- run: go install -tags gotreesitter_no_copyleft github.com/RhythmShahriar/tacet/cmd/tacet@latest
 - run: tacet check --fail-on medium
 ```
 

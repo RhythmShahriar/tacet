@@ -14,7 +14,7 @@ FUZZTIME ?= 30s
 VERSION ?= $(shell git describe --tags --exact-match --match 'v*' 2>/dev/null | sed 's/^v//')
 
 build: ## build bin/tacet
-	go build -ldflags "-X main.version=$(or $(VERSION),dev)" -o bin/tacet ./cmd/tacet
+	go build -tags gotreesitter_no_copyleft -ldflags "-X main.version=$(or $(VERSION),dev)" -o bin/tacet ./cmd/tacet
 
 test: ## every Go test with the race detector
 	go test -race ./...

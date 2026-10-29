@@ -44,6 +44,7 @@ func init() {
 		{"uninstall", "remove tacet from this project and restore your files", runUninstall, false},
 		{"measure", "context loaded at startup and what past sessions billed", runMeasure, false},
 		{"audit", "setup findings, each with a fix", runAudit, false},
+		{"map", "ranked code map: tacet map [--budget N] [--dir path]", runMap, false},
 		{"docs", "instruction files: tacet docs lint|fix|init|sync", runDocs, false},
 		{"skills", "repeated requests that could be skills, with counts", runSkills, false},
 		{"check", "docs and audit for CI; exits 1 on findings", runCheck, false},
@@ -53,6 +54,7 @@ func init() {
 		{"apply", "apply one suggestion by id (used by /tacet)", runApply, true},
 		{"dismiss", "stop suggesting one fix here (used by /tacet)", runDismiss, true},
 		{"hook", "run a hook event (called by Claude Code)", runHook, true},
+		{"mcp", "serve the code tools over MCP (called by Claude Code)", runMCP, true},
 		{"plugin", "write the plugin to a folder: tacet plugin write <dir>", runPlugin, true},
 	}
 }
