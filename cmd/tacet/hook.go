@@ -14,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/RhythmShahriar/tacet/audio"
 	"github.com/RhythmShahriar/tacet/claude"
 	"github.com/RhythmShahriar/tacet/convert"
 	"github.com/RhythmShahriar/tacet/guard"
@@ -54,6 +55,10 @@ func runHook(a *app, args []string) error {
 	}
 	if args[0] == "background-audit" {
 		backgroundAudit(a.root())
+		return nil
+	}
+	if args[0] == "background-convert" {
+		backgroundConvert(a.root())
 		return nil
 	}
 	b, err := io.ReadAll(io.LimitReader(os.Stdin, 8<<20))
@@ -131,6 +136,9 @@ func sessionStart(root string, cfg *config.Config, in *hookInput) any {
 	var parts []string
 	if n := takeNotice(root); n != "" {
 		parts = append(parts, n)
+	}
+	if d := sessionDocs(root, cfg); d != "" {
+		parts = append(parts, d)
 	}
 	if len(parts) == 0 {
 		return nil
@@ -236,6 +244,9 @@ func preRead(root string, cfg *config.Config, raw json.RawMessage, path, transcr
 	if strings.HasPrefix(path, convert.Dir(root)+string(filepath.Separator)) {
 		recordFollowUp(root, path, raw)
 		return nil, nil
+	}
+	if cfg.On("audio") && audio.Supported(path) {
+		return preReadAudio(root, raw, path), nil
 	}
 	if !cfg.On("convert") || !convert.Supported(path) {
 		return nil, nil
@@ -412,6 +423,10 @@ func promptDocs(root string, cfg *config.Config, in *hookInput) any {
 			notes = append(notes, "Notes from the previous session on this project (tacet SESSION.md):\n\n"+note)
 			shown = append(shown, "tacet: added the notes from your last session")
 		}
+	}
+	if cfg.On("audio") {
+		n, s := promptAudio(root, in)
+		notes, shown = append(notes, n...), append(shown, s...)
 	}
 	if !cfg.On("convert") {
 		return finishPrompt(notes, shown)
