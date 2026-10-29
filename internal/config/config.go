@@ -19,6 +19,7 @@ import (
 // Features tacet can switch on and off, with their defaults.
 var Features = map[string]bool{
 	"convert": true,  // PDF and Office files read as Markdown
+	"outline": true,  // long documents open on an outline of their sections
 	"audio":   true,  // audio read as a transcript (asks before the first download)
 	"guard":   true,  // block reads of secrets
 	"handoff": true,  // SESSION.md written before compact and at session end

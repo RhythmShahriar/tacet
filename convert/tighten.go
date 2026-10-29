@@ -63,6 +63,10 @@ func Tighten(md string) string {
 	inFence := false
 	for _, l := range lines {
 		t := strings.TrimSpace(l)
+		// "\## Title": a heading typed as text, which converters escape.
+		if strings.HasPrefix(t, "\\#") {
+			t = strings.TrimLeft(t, "\\")
+		}
 		if strings.HasPrefix(t, "```") {
 			inFence = !inFence
 			out = append(out, l)

@@ -4,8 +4,10 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/RhythmShahriar/tacet/fix"
@@ -32,6 +34,26 @@ type statusJSON struct {
 	SinceInit   int             `json:"sessions_since_init"`
 	HitRate     float64         `json:"cache_hit_rate"`
 	Suggestions []suggestion    `json:"suggestions"`
+	DocReads    int             `json:"document_reads"`
+	DocSaved    int             `json:"document_tokens_saved"`
+}
+
+// docSavings adds up .tacet/savings.jsonl.
+func docSavings(root string) (reads, saved int) {
+	b, err := os.ReadFile(savingsPath(root))
+	if err != nil {
+		return 0, 0
+	}
+	for _, l := range strings.Split(string(b), "\n") {
+		var s Saving
+		if json.Unmarshal([]byte(l), &s) == nil && s.File != "" {
+			if s.Method != "follow-up" {
+				reads++
+			}
+			saved += s.Saved
+		}
+	}
+	return reads, saved
 }
 
 func runStatus(a *app, _ []string) error {
@@ -56,6 +78,7 @@ func runStatus(a *app, _ []string) error {
 	_, sug := s.fixes()
 	st := statusJSON{Root: root, Initialized: true, Features: config.Load(root).Features, Baseline: b,
 		Startup: s.Startup.Total, PerRequest: s.Usage.PerRequest(), SinceInit: s.Usage.Sessions, HitRate: s.Usage.HitRate}
+	st.DocReads, st.DocSaved = docSavings(root)
 	for _, f := range sug {
 		st.Suggestions = append(st.Suggestions, suggestion{ID: f.Fix.ID, Title: f.Fix.Title, Why: f.Message, Tokens: saving(f)})
 	}
@@ -73,6 +96,9 @@ func runStatus(a *app, _ []string) error {
 		} else {
 			fmt.Fprintln(w, "  "+ui.Dim.Render("billed savings show after your next sessions"))
 		}
+	}
+	if st.DocReads > 0 {
+		fmt.Fprintf(w, "  documents         %d reads, about %s fewer tokens read, net %s\n", st.DocReads, ui.Tokens(st.DocSaved), ui.Dim.Render("(PDF, Word, PowerPoint, Excel)"))
 	}
 	fmt.Fprintln(w)
 	fmt.Fprintln(w, ui.Section("suggestions", len(st.Suggestions), width()))

@@ -41,3 +41,10 @@ func TestTightenKeepsRealInlineCode(t *testing.T) {
 		t.Fatalf("inline code lost:\n%s", got)
 	}
 }
+
+func TestTightenEscapedHeadings(t *testing.T) {
+	got := Tighten("\\## 10. Exit codes\nbody\n\\#notaheading\n")
+	if !strings.HasPrefix(got, "## 10. Exit codes\n") {
+		t.Fatalf("got %q", got)
+	}
+}

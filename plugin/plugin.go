@@ -32,6 +32,7 @@ func Dir() string {
 // hookEvents maps Claude Code events to tacet hook names and matchers.
 var hookEvents = []struct{ event, matcher, name string }{
 	{"SessionStart", "", "session-start"},
+	{"UserPromptSubmit", "", "prompt"},
 	{"PreToolUse", "Read", "pre-read"},
 	{"PreToolUse", "Bash", "pre-bash"},
 	{"PreCompact", "", "pre-compact"},
