@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT
 
 # Installs tacet on Windows from GitHub Releases:
-#   irm https://raw.githubusercontent.com/RhythmShahriar/tacet/master/scripts/install.ps1 | iex
+#   irm https://rythm.sh/tacet/install.ps1 | iex
 #
 # Environment:
 #   TACET_INSTALL_DIR     where to install (default %LOCALAPPDATA%\Programs\tacet)

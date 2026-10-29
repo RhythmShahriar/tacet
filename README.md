@@ -31,13 +31,13 @@
 macOS and Linux:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/RhythmShahriar/tacet/master/scripts/install.sh | sh
+curl -fsSL https://rythm.sh/tacet/install.sh | sh
 ```
 
 Windows PowerShell:
 
 ```powershell
-irm https://raw.githubusercontent.com/RhythmShahriar/tacet/master/scripts/install.ps1 | iex
+irm https://rythm.sh/tacet/install.ps1 | iex
 ```
 
 Both scripts download the build for your system from the latest release, check it against the release's `checksums.txt` and, when [cosign](https://github.com/sigstore/cosign) is installed, check that `checksums.txt` was signed by tacet's release workflow. They install to `~/.local/bin` (Windows: `%LOCALAPPDATA%\Programs\tacet`); set `TACET_INSTALL_DIR` for another folder or `TACET_VERSION=0.1.0` for a specific version.

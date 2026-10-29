@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 # Installs tacet from GitHub Releases on macOS and Linux:
-#   curl -fsSL https://raw.githubusercontent.com/RhythmShahriar/tacet/master/scripts/install.sh | sh
+#   curl -fsSL https://rythm.sh/tacet/install.sh | sh
 #
 # Environment:
 #   TACET_INSTALL_DIR     where to install (default ~/.local/bin, else the
