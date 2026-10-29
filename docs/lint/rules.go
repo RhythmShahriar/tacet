@@ -33,10 +33,13 @@ func Check(s *Set) []core.Finding {
 		out = append(out, checkTree(s, d)...)
 		out = append(out, checkProcedure(s, d)...)
 		out = append(out, checkVague(s, d)...)
+		out = append(out, checkNotes(s, d)...)
+		out = append(out, checkScoped(s, d)...)
 	}
 	out = append(out, checkShadowedAgents(s)...)
 	out = append(out, checkDuplicates(s, all)...)
 	out = append(out, checkContradictions(s, all)...)
+	measureFixes(s, out)
 	core.Rank(out)
 	return out
 }
@@ -106,12 +109,17 @@ func checkShadowedAgents(s *Set) []core.Finding {
 		Hint:    "import it: add @AGENTS.md to CLAUDE.md",
 	}
 	if claudeMD != "" {
-		old, err := os.ReadFile(claudeMD) // #nosec G304 -- the project's CLAUDE.md
-		if err == nil {
-			f.Fix = &core.Fix{
-				ID: "agents-bridge", Title: "Import AGENTS.md from CLAUDE.md", Safe: true,
-				Edits: []core.Edit{{Path: claudeMD, Old: old, New: append([]byte("@AGENTS.md\n\n"), old...)}},
-			}
+		// A Change, not Old/New, so it composes with other fixes to CLAUDE.md.
+		f.Fix = &core.Fix{
+			ID: "agents-bridge", Title: "Import AGENTS.md from CLAUDE.md", Safe: true,
+			Edits: []core.Edit{{Path: claudeMD, Change: func(cur []byte) ([]byte, error) {
+				for _, r := range Imports(string(cur)) {
+					if r.Target == "AGENTS.md" || r.Target == "./AGENTS.md" {
+						return cur, nil
+					}
+				}
+				return append([]byte("@AGENTS.md\n\n"), cur...), nil
+			}}},
 		}
 	}
 	return []core.Finding{f}
@@ -141,6 +149,7 @@ func checkStale(s *Set, d *Doc) []core.Finding {
 				out = append(out, core.Finding{
 					Rule: "stale/path", Severity: core.Medium, Path: rel(s, d.Path), Line: n + 1,
 					Message: p + " doesn't exist; the agent will look for it and waste turns",
+					Hint:    "point it at the new path or delete the line; tacet can't know where it went",
 				})
 			}
 		}
@@ -149,6 +158,7 @@ func checkStale(s *Set, d *Doc) []core.Finding {
 				out = append(out, core.Finding{
 					Rule: "stale/command", Severity: core.Medium, Path: rel(s, d.Path), Line: n + 1,
 					Message: fmt.Sprintf("%s %s isn't defined in %s", c.tool, c.target, c.source()),
+					Hint:    "name a target that exists, or add this one",
 				})
 			}
 		}
@@ -176,6 +186,9 @@ func commandRefs(line string) []cmdRef {
 	var out []cmdRef
 	for _, m := range cmdRe.FindAllStringSubmatch(line, -1) {
 		tool := m[1]
+		if tool == "make" && proseAfterMake[m[2]] {
+			continue
+		}
 		switch tool {
 		case "npm run", "pnpm run", "pnpm", "yarn", "bun run":
 			if builtinPM[m[2]] {
@@ -188,6 +201,9 @@ func commandRefs(line string) []cmdRef {
 	return out
 }
 
+// Words that follow "make" in prose, not targets.
+var proseAfterMake = map[string]bool{"it": true, "sure": true, "the": true, "a": true, "an": true, "this": true, "that": true, "them": true, "sense": true, "changes": true, "use": true}
+
 // Package manager subcommands that aren't scripts.
 var builtinPM = map[string]bool{"install": true, "add": true, "remove": true, "i": true, "exec": true, "dlx": true, "test": true, "run": true, "ci": true, "up": true, "update": true, "why": true, "list": true, "init": true, "create": true, "dev": false}
 
@@ -195,6 +211,10 @@ var makeTargetRe = regexp.MustCompile(`(?m)^([A-Za-z0-9][A-Za-z0-9_.\-]*)\s*:([^
 var justRecipeRe = regexp.MustCompile(`(?m)^@?([A-Za-z0-9][A-Za-z0-9_\-]*)[^\n:=]*:([^=]|$)`)
 var scriptsRe = regexp.MustCompile(`(?s)"scripts"\s*:\s*\{(.*?)\}`)
 var scriptKeyRe = regexp.MustCompile(`"([^"]+)"\s*:`)
+
+// Targets is the make, just and npm targets root defines, keyed by
+// tool; a tool with no definition file is absent.
+func Targets(root string) map[string]map[string]bool { return commandTargets(root) }
 
 // commandTargets reads the targets a project defines. A tool with no
 // definition file is absent, so its commands aren't checked.
@@ -245,6 +265,7 @@ func checkTree(s *Set, d *Doc) []core.Finding {
 				Message: "a directory tree the agent can list itself",
 				Hint:    "delete it, or keep a short codemap in ARCHITECTURE.md",
 				Tokens:  tokens.Estimate(b.text),
+				Fix:     treeFix(s, d, b),
 			})
 		}
 	}
@@ -252,7 +273,8 @@ func checkTree(s *Set, d *Doc) []core.Finding {
 }
 
 type fence struct {
-	line int
+	line int // opening fence, 1-based
+	end  int // closing fence, 1-based
 	text string
 }
 
@@ -264,6 +286,7 @@ func fences(body string) []fence {
 			if cur == nil {
 				cur = &fence{line: n + 1}
 			} else {
+				cur.end = n + 1
 				out = append(out, *cur)
 				cur = nil
 			}
@@ -383,6 +406,7 @@ func checkDuplicates(s *Set, all []*Doc) []core.Finding {
 					Rule: "dup/line", Severity: core.Low, Path: rel(s, d.Path), Line: n + 1,
 					Message: fmt.Sprintf("also in %s:%d; it loads twice", rel(s, f.doc.Path), f.line),
 					Tokens:  tokens.Estimate(l),
+					Fix:     dupFix(s, f.doc, d, f.line, n+1),
 				})
 				continue
 			}
