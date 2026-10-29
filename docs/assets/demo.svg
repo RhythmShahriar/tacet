@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="844" height="344" viewBox="0 0 844 344" role="img" aria-labelledby="title desc">
+<title id="title">tacet init</title>
+<desc id="desc">A real run of tacet init on a sample project: it measures 461 tokens loaded every session, applies one safe fix that imports AGENTS.md from CLAUDE.md and leaves one suggestion for /tacet in Claude Code.</desc>
+<style>text{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono","DejaVu Sans Mono",monospace;font-size:13px;white-space:pre}</style>
+<rect width="844" height="344" rx="10" fill="#100F0D"/>
+<rect x="0.5" y="0.5" width="843" height="343" rx="10" fill="none" stroke="#2A2824"/>
+<circle cx="20" cy="18" r="5" fill="#3A3833"/>
+<circle cx="38" cy="18" r="5" fill="#3A3833"/>
+<circle cx="56" cy="18" r="5" fill="#FF7C52"/>
+<text x="422" y="22" fill="#8A8780" text-anchor="middle" style="font-size:12px">shop</text>
+<text x="20" y="52" xml:space="preserve"><tspan fill="#8A8780">$ </tspan><tspan fill="#FFFFFF">tacet init --no-plugin --yes</tspan></text>
+<text x="20" y="72" xml:space="preserve"><tspan fill="#FF7C52" font-weight="bold">tacet</tspan><tspan fill="#FFFFFF">  </tspan><tspan fill="#8A8780">dev</tspan></text>
+<text x="20" y="92" xml:space="preserve"><tspan fill="#8A8780">project /tmp/tacet-demo/shop</tspan></text>
+<text x="20" y="132" xml:space="preserve"><tspan fill="#FFFFFF">Every session here loads about </tspan><tspan fill="#FF7C52" font-weight="bold">461</tspan><tspan fill="#FFFFFF"> tokens of your setup before you type, plus Claude Code's own prompt.</tspan></text>
+<text x="20" y="172" xml:space="preserve"><tspan fill="#FFFFFF" font-weight="bold">SAFE FIXES</tspan><tspan fill="#FFFFFF">  </tspan><tspan fill="#8A8780">1</tspan><tspan fill="#8A8780"> ──────────────────────────────────────────────────────────────────</tspan></text>
+<text x="20" y="192" xml:space="preserve"><tspan fill="#FFFFFF">  </tspan><tspan fill="#FF7C52" font-weight="bold">•</tspan><tspan fill="#FFFFFF"> Import AGENTS.md from CLAUDE.md</tspan></text>
+<text x="20" y="232" xml:space="preserve"><tspan fill="#10B981">✓</tspan><tspan fill="#FFFFFF"> Applied 1 fix(es).</tspan></text>
+<text x="20" y="252" xml:space="preserve"><tspan fill="#8A8780">Plugin skipped (--no-plugin): hooks won't run until you install it.</tspan></text>
+<text x="20" y="272" xml:space="preserve"><tspan fill="#FF7C52" font-weight="bold">•</tspan><tspan fill="#FFFFFF"> 1 suggestion(s) need a yes from you: type /tacet in Claude Code.</tspan></text>
+<text x="20" y="312" xml:space="preserve"><tspan fill="#FFFFFF">Done. tacet now works on its own. Restart Claude Code to load the plugin; type /tacet anytime.</tspan></text>
+</svg>
