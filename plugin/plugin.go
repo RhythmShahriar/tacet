@@ -37,7 +37,6 @@ var hookEvents = []struct{ event, matcher, name string }{
 	{"PreToolUse", "Bash", "pre-bash"},
 	{"PreCompact", "", "pre-compact"},
 	{"SessionEnd", "", "session-end"},
-	{"Stop", "", "stop"},
 }
 
 // Write generates the marketplace and plugin under dir for the tacet

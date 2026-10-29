@@ -21,7 +21,6 @@ import (
 	"github.com/RhythmShahriar/tacet/handoff"
 	"github.com/RhythmShahriar/tacet/internal/config"
 	"github.com/RhythmShahriar/tacet/internal/ui"
-	"github.com/RhythmShahriar/tacet/speak"
 	"github.com/RhythmShahriar/tacet/tokens"
 )
 
@@ -117,11 +116,6 @@ func handle(root string, cfg *config.Config, event string, in *hookInput) (any, 
 		err := writeHandoff(root, cfg, in)
 		countSession(root, cfg)
 		return nil, err
-	case "stop":
-		if cfg.On("speak") && !in.StopHookActive && in.LastMessage != "" {
-			return nil, speak.Say(in.LastMessage)
-		}
-		return nil, nil
 	}
 	return nil, nil
 }
@@ -277,7 +271,7 @@ func preRead(root string, cfg *config.Config, raw json.RawMessage, path, transcr
 	switch {
 	case hasLimit || hasOffset:
 		// The agent asked for a range: give it that range of the text.
-	case r.Outline != "" && cfg.On("outline"):
+	case r.Outline != "":
 		// A long document: start with the outline, plus the sections that
 		// match what the person asked, so only what the task needs is read.
 		in["file_path"] = convert.ReadTarget(r, lastAsk(transcript), true)
@@ -442,7 +436,7 @@ func promptDocs(root string, cfg *config.Config, in *hookInput) any {
 		if err != nil {
 			continue
 		}
-		target := convert.ReadTarget(r, in.Prompt, cfg.On("outline"))
+		target := convert.ReadTarget(r, in.Prompt, true)
 		notes = append(notes, fmt.Sprintf("%s can't be read directly; tacet converted it: Read %s instead.", filepath.Base(p), target))
 		shown = append(shown, recordSaving(root, filepath.Base(p), r.Path, target, nil))
 	}

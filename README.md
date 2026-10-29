@@ -118,15 +118,12 @@ Features for `tacet on` and `tacet off`:
 
 | Feature | Default | What it does |
 |---|---|---|
-| `convert` | on | PDF and Office files read as Markdown |
-| `outline` | on | long documents open on an outline of their sections |
+| `convert` | on | PDF and Office files read as Markdown, long ones on an outline of their sections |
 | `guard` | on | blocks reads of secrets |
 | `handoff` | on | `SESSION.md` written before compact and at session end |
 | `audio` | on | audio read as a transcript, asking before the first download |
 | `map` | on | code map for the MCP tools |
 | `skills` | on | suggests skills from repeated instructions |
-| `speak` | off | reads the final reply aloud |
-| `trim` | off | filters noisy command output |
 
 The same switches live in `.tacet/config.yaml`, with `audit_every` for the number of sessions between quiet re-audits. Every command takes `--json` for machine output, `-y` to skip prompts and `-C <dir>` to run in another folder.
 
