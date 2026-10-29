@@ -23,7 +23,7 @@
 </p>
 
 <p align="center">
-  <img alt="A real tacet init run on a sample project: about 461 tokens loaded every session, one safe fix applied that imports AGENTS.md from CLAUDE.md and one suggestion left for /tacet in Claude Code" src="docs/assets/demo.svg" width="720">
+  <img alt="A real tacet init run on a sample project, then tacet status listing four suggestions that each wait for a yes in /tacet: move a 5-step release procedure into a skill, delete a directory tree, import AGENTS.md and turn off commit credit lines" src="docs/assets/demo.svg" width="720">
 </p>
 
 ## Install
@@ -44,8 +44,6 @@ Both scripts download the build for your system from the latest release, check i
 
 | With | Run |
 |---|---|
-| Homebrew | `brew install rhythmshahriar/tap/tacet` |
-| Scoop | `scoop bucket add rhythmshahriar https://github.com/RhythmShahriar/scoop-bucket` then `scoop install tacet` |
 | Go | `go install -tags gotreesitter_no_copyleft github.com/RhythmShahriar/tacet/cmd/tacet@latest` |
 
 To check a release archive by hand, run [`scripts/verify-release.sh`](scripts/verify-release.sh) next to the archive, `checksums.txt` and `checksums.txt.sigstore.json`.
@@ -163,7 +161,7 @@ In each project where you ran `tacet init`:
 tacet uninstall
 ```
 
-It reverts every change tacet made there, removes the Claude Code plugin and the `/tacet` skill and deletes `.tacet/`. Then remove the binary: `brew uninstall tacet`, `scoop uninstall tacet` or delete `tacet` from the folder the install script used.
+It reverts every change tacet made there, removes the Claude Code plugin and the `/tacet` skill and deletes `.tacet/`. Then remove the binary: delete `tacet` from the folder the install script used.
 
 ## Contributing
 

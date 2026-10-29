@@ -13,21 +13,15 @@ tokens without hurting answers. Everything below is measured before it is turned
   continue
 - docs lint and audit, `tacet check` for CI
 - `tacet report`: the HTML report
-
-## In flight
-
-- **Code map.** A ranked map of the code within a token budget, served on demand through MCP
-  tools and never loaded upfront.
-- **Skills.** Drafts skills from instructions you repeat across sessions and checks the skills
-  you have: descriptions too long, overlapping, never used.
-- **Audio.** Audio files read as a transcript, with a one-time confirmed and checksummed model
-  download.
-- **Docs sync.** `AGENTS.md` as the one source, with `CLAUDE.md` and other tools' rules files
-  kept in step and drift reported.
+- code map: symbols, callers and file outlines through MCP tools, never loaded upfront
+- skills: drafts from instructions you repeat across sessions and from long procedures
+- audio: voice notes and recordings read as a transcript, after a one-time checksummed download
+- docs fix, init and sync: `AGENTS.md` as the one source, other tools' rules files kept in step
 
 ## Later
 
 - Codex support
 - Cursor support
+- Homebrew and Scoop packages
 
 Ideas and requests are welcome as issues.
