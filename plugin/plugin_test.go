@@ -52,3 +52,12 @@ func TestSkillHiddenFromModel(t *testing.T) {
 		t.Fatal("the /tacet skill must cost no context")
 	}
 }
+
+func TestSkillDraftsOnDemand(t *testing.T) {
+	s := Skill("tacet")
+	for _, want := range []string{"Bash(tacet skills new:*)", "make this a skill", "/tacet skill <what>", "tacet skills new --from-session --json", "--yes in place of --json"} {
+		if !strings.Contains(s, want) {
+			t.Errorf("the /tacet skill lacks %q", want)
+		}
+	}
+}

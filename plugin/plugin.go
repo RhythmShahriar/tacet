@@ -113,7 +113,7 @@ func Skill(bin string) string {
 name: tacet
 description: Show what tacet saved on this project and the suggestions waiting for a yes.
 disable-model-invocation: true
-allowed-tools: Bash(` + b + ` status:*), Bash(` + b + ` apply:*), Bash(` + b + ` dismiss:*), Bash(` + b + ` on:*), Bash(` + b + ` off:*), Bash(` + b + ` undo:*)
+allowed-tools: Bash(` + b + ` status:*), Bash(` + b + ` apply:*), Bash(` + b + ` dismiss:*), Bash(` + b + ` on:*), Bash(` + b + ` off:*), Bash(` + b + ` undo:*), Bash(` + b + ` skills new:*)
 ---
 <!-- tacet · github.com/RhythmShahriar/tacet -->
 
@@ -124,6 +124,9 @@ Run ` + "`" + b + ` status --json` + "`" + ` and show the person, briefly:
 
 Then ask which suggestions to apply. For each yes run ` + "`" + b + ` apply <id>` + "`" + `; for each no run ` + "`" + b + ` dismiss <id>` + "`" + `.
 Never apply a suggestion the person did not choose. If they ask to change a feature, run ` + "`" + b + ` on <feature>` + "`" + ` or ` + "`" + b + ` off <feature>` + "`" + `.
+
+If the person says "make this a skill" or types /tacet skill <what>, run ` + "`" + b + ` skills new --from-session --json` + "`" + `, adding <what> in quotes when given.
+Show the draft's path, description and steps. Only on a yes run the same command with --yes in place of --json; it never overwrites a skill.
 `
 }
 

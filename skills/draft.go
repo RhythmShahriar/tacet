@@ -131,8 +131,19 @@ var politeness = []string{
 // Describe is a one-sentence description that triggers the skill,
 // built from the representative request.
 func Describe(text string) string {
-	s := strings.TrimSpace(strings.Split(strings.TrimSpace(text), "\n")[0])
-	s = strings.TrimRight(s, ".!? ")
+	s := unpolite(strings.Split(strings.TrimSpace(text), "\n")[0])
+	if r := []rune(s); len(r) > 200 {
+		s = strings.TrimSpace(string(r[:200])) + "..."
+	}
+	if s == "" {
+		return "Use when asked to repeat this request."
+	}
+	return "Use when asked to " + lowerFirst(s) + "."
+}
+
+// unpolite drops the courtesy and filler a request opens with.
+func unpolite(s string) string {
+	s = strings.TrimRight(strings.TrimSpace(s), ".!? ")
 	for changed := true; changed; {
 		changed = false
 		low := strings.ToLower(s) + " "
@@ -144,13 +155,7 @@ func Describe(text string) string {
 			}
 		}
 	}
-	if r := []rune(s); len(r) > 200 {
-		s = strings.TrimSpace(string(r[:200])) + "..."
-	}
-	if s == "" {
-		return "Use when asked to repeat this request."
-	}
-	return "Use when asked to " + lowerFirst(s) + "."
+	return s
 }
 
 func lowerFirst(s string) string {

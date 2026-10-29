@@ -17,7 +17,6 @@ import (
 	"github.com/RhythmShahriar/tacet/fix"
 	"github.com/RhythmShahriar/tacet/internal/ui"
 	"github.com/RhythmShahriar/tacet/measure"
-	"github.com/RhythmShahriar/tacet/tokens"
 )
 
 // MinSessions is how many past sessions an "unused" finding needs.
@@ -41,8 +40,7 @@ func Run(in Input) []core.Finding {
 	var out []core.Finding
 	out = append(out, toolSearch(in)...)
 	out = append(out, unusedMCP(in)...)
-	out = append(out, unusedSkills(in)...)
-	out = append(out, longSkills(in.Root)...)
+	out = append(out, SkillChecks(in)...)
 	out = append(out, cacheMisses(in)...)
 	out = append(out, subagentShare(in)...)
 	out = append(out, memoryIndex(in.Root)...)
@@ -176,21 +174,28 @@ func longSkills(root string) []core.Finding {
 			continue
 		}
 		n := len([]rune(sk.Description))
+		f := core.Finding{Rule: "skills/description", Path: sk.Path}
 		switch {
-		case n > 1536:
-			out = append(out, core.Finding{
-				Rule: "skills/description", Severity: core.Medium, Path: sk.Path,
-				Message: fmt.Sprintf("skill %q has a %d-character description; Claude Code cuts it at 1,536", sk.Name, n),
-				Hint:    "keep the trigger words first and move detail into the body",
-			})
+		case n > DescriptionCap:
+			f.Severity = core.Medium
+			f.Message = fmt.Sprintf("skill %q has a %d-character description; Claude Code cuts it at 1,536", sk.Name, n)
+			f.Hint = "keep the trigger words first and move detail into the body"
+		case n > nearCap:
+			f.Severity = core.Medium
+			f.Message = fmt.Sprintf("skill %q's %d-character description is near the 1,536 cap", sk.Name, n)
+			f.Hint = "keep the trigger words first and move detail into the body"
 		case n > 500:
-			out = append(out, core.Finding{
-				Rule: "skills/description", Severity: core.Info, Path: sk.Path,
-				Message: fmt.Sprintf("skill %q's %d-character description loads every session", sk.Name, n),
-				Hint:    "a sentence or two is enough to trigger it; the body loads on use",
-				Tokens:  tokens.Estimate(sk.Description) - 60,
-			})
+			f.Severity = core.Info
+			f.Message = fmt.Sprintf("skill %q's %d-character description loads every session", sk.Name, n)
+			f.Hint = "a sentence or two is enough to trigger it; the body loads on use"
+		default:
+			continue
 		}
+		f.Fix = shortenFix(sk)
+		if f.Fix != nil {
+			f.Tokens = f.Fix.Tokens
+		}
+		out = append(out, f)
 	}
 	return out
 }
