@@ -5,6 +5,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -14,6 +15,7 @@ import (
 	"time"
 
 	"github.com/RhythmShahriar/tacet/claude"
+	"github.com/RhythmShahriar/tacet/convert"
 	"github.com/RhythmShahriar/tacet/guard"
 	"github.com/RhythmShahriar/tacet/handoff"
 	"github.com/RhythmShahriar/tacet/internal/config"
@@ -88,7 +90,7 @@ func handle(root string, cfg *config.Config, event string, in *hookInput) (any, 
 		if cfg.On("guard") && guard.IsSecretPath(ti.FilePath) {
 			return deny(fmt.Sprintf("tacet guard: %s holds secrets, so it stays out of the conversation. Ask the person for the one value you need, or use a .example file.", filepath.Base(ti.FilePath))), nil
 		}
-		return preRead(root, cfg, ti.FilePath)
+		return preRead(root, cfg, in.ToolInput, ti.FilePath)
 	case "pre-bash":
 		var ti toolInput
 		_ = json.Unmarshal(in.ToolInput, &ti)
@@ -225,6 +227,35 @@ func logHook(root, event string, err error) {
 	fmt.Fprintf(f, "%s %s: %v\n", time.Now().UTC().Format(time.RFC3339), event, err)
 }
 
-// preRead is where reads of documents and audio are turned into
-// Markdown; until a converter is linked it lets every read through.
-var preRead = func(root string, cfg *config.Config, path string) (any, error) { return nil, nil }
+// preRead sends a read of a PDF or Office file to its Markdown version.
+// Anything that goes wrong lets the original read through.
+func preRead(root string, cfg *config.Config, raw json.RawMessage, path string) (any, error) {
+	if !cfg.On("convert") || !convert.Supported(path) {
+		return nil, nil
+	}
+	if !filepath.IsAbs(path) {
+		path = filepath.Join(root, path)
+	}
+	r, err := convert.File(root, path)
+	if errors.Is(err, convert.ErrScanned) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	in := map[string]any{}
+	_ = json.Unmarshal(raw, &in)
+	delete(in, "pages")
+	in["file_path"] = r.Path
+	// A long document: return part 1 exactly, so the read never hits the
+	// size cap and the header tells the agent where part 2 starts.
+	if _, set := in["limit"]; !set && r.FirstPart > 0 {
+		if _, off := in["offset"]; !off {
+			in["limit"] = r.FirstPart
+		}
+	}
+	return map[string]any{"hookSpecificOutput": map[string]any{
+		"hookEventName": "PreToolUse", "permissionDecision": "allow", "updatedInput": in,
+		"permissionDecisionReason": "tacet: reading " + filepath.Base(path) + " as Markdown",
+	}}, nil
+}
