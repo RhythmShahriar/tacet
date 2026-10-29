@@ -122,6 +122,8 @@ Run ` + "`" + b + ` status --json` + "`" + ` and show the person, briefly:
 1. Tokens saved since tacet init: the startup context, then billed tokens per request and cache hits from the main-session fields (per_request_main, cache_hit_rate_main). Show those billed numbers only when enough_data is true; otherwise say there is not enough data yet (requests_main of min_requests requests). List subagent usage on its own line, never as part of the saving. Only the numbers it reports.
 2. Each suggestion: its title, what it saves and why, one per line.
 
+When it reports ` + "`update`" + `, add one line first: tacet <latest> is available: run <command>.
+
 Then ask which suggestions to apply. For each yes run ` + "`" + b + ` apply <id>` + "`" + `; for each no run ` + "`" + b + ` dismiss <id>` + "`" + `.
 Never apply a suggestion the person did not choose. If they ask to change a feature, run ` + "`" + b + ` on <feature>` + "`" + ` or ` + "`" + b + ` off <feature>` + "`" + `.
 

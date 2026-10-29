@@ -98,7 +98,7 @@ Model: Claude Haiku. Claude Code 2.1.311. Date: 2026-10-29. Denying reads of loc
 
 ## Privacy
 
-tacet runs on your machine and reads only your project, its Claude Code settings and its local transcripts. It sends nothing anywhere. The only network use is the one-time download of the speech engine and model for audio, which you start with `tacet transcribe --setup` and which is checked against pinned checksums. Its state lives in `.tacet/` in your project, which `tacet init` keeps out of git through `.git/info/exclude`.
+tacet runs on your machine and reads only your project, its Claude Code settings and its local transcripts. It sends nothing about your project anywhere. It uses the network for two things. One is the one-time download of the speech engine and model for audio, which you start with `tacet transcribe --setup` and which is checked against pinned checksums. The other is a check for a newer tacet release on GitHub, at most once a day. That check only asks; tacet never updates without your yes. Set `update: notify` or `update: off` in `~/.config/tacet/config.yaml`, or `TACET_NO_UPDATE_NOTIFIER=1`, to quiet or stop it. It never runs in CI. Its state lives in `.tacet/` in your project, which `tacet init` keeps out of git through `.git/info/exclude`.
 
 ## Commands
 
@@ -116,6 +116,7 @@ Most people only run `tacet init`. For a look or a change:
 | `tacet on <feature>` / `tacet off <feature>` | turns a feature on or off for this project |
 | `tacet undo` | reverts tacet's last change |
 | `tacet uninstall` | removes tacet from this project and restores your files |
+| `tacet update` | installs the latest release after a yes, once its signature and checksum verify (`--rollback` restores the previous binary) |
 
 Features for `tacet on` and `tacet off`:
 

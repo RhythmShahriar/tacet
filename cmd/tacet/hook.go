@@ -145,14 +145,21 @@ func sessionStart(root string, cfg *config.Config, in *hookInput) any {
 	if c := compactContext(root, cfg, in); c != "" {
 		parts = append(parts, c)
 	}
-	if len(parts) == 0 {
+	out := map[string]any{}
+	if u := updateNotice(); u != "" {
+		out["systemMessage"] = u // shown to the person, not the model
+	}
+	if len(parts) > 0 {
+		ctx := strings.Join(parts, "\n\n")
+		if len(ctx) > maxContext {
+			ctx = ctx[:maxContext]
+		}
+		out["hookSpecificOutput"] = map[string]any{"hookEventName": "SessionStart", "additionalContext": ctx}
+	}
+	if len(out) == 0 {
 		return nil
 	}
-	ctx := strings.Join(parts, "\n\n")
-	if len(ctx) > maxContext {
-		ctx = ctx[:maxContext]
-	}
-	return map[string]any{"hookSpecificOutput": map[string]any{"hookEventName": "SessionStart", "additionalContext": ctx}}
+	return out
 }
 
 func writeHandoff(root string, cfg *config.Config, in *hookInput) error {

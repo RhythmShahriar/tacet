@@ -50,6 +50,7 @@ func init() {
 		{"check", "docs and audit for CI; exits 1 on findings", runCheck, false},
 		{"transcribe", "audio to a Markdown transcript: tacet transcribe <file>", runTranscribe, false},
 		{"report", "write an HTML report of what tacet saved: .tacet/report.html", runReport, false},
+		{"update", "update tacet to the latest signed release", runUpdate, false},
 		{"version", "print the version", runVersion, false},
 		{"apply", "apply one suggestion by id (used by /tacet)", runApply, true},
 		{"dismiss", "stop suggesting one fix here (used by /tacet)", runDismiss, true},
@@ -98,6 +99,9 @@ func run(args []string, out, errw io.Writer) int {
 	}
 	for _, c := range commands {
 		if c.name == name {
+			if !c.hidden {
+				beforeCommand(a, name)
+			}
 			err := c.run(a, rest)
 			if err != nil && !errors.Is(err, errFindings) {
 				fmt.Fprintln(errw, "tacet:", err)
