@@ -34,6 +34,7 @@ type hookInput struct {
 	Source         string          `json:"source"`
 	ToolName       string          `json:"tool_name"`
 	ToolInput      json.RawMessage `json:"tool_input"`
+	ToolResponse   json.RawMessage `json:"tool_response"`
 	LastMessage    string          `json:"last_assistant_message"`
 	Prompt         string          `json:"prompt"`
 	StopHookActive bool            `json:"stop_hook_active"`
@@ -111,6 +112,8 @@ func handle(root string, cfg *config.Config, event string, in *hookInput) (any, 
 		return nil, nil
 	case "pre-search":
 		return preSearch(root, cfg, in), nil
+	case "post-output":
+		return postOutput(root, cfg, in), nil
 	case "prompt":
 		return promptDocs(root, cfg, in), nil
 	case "pre-compact":

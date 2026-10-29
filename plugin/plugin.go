@@ -36,6 +36,7 @@ var hookEvents = []struct{ event, matcher, name string }{
 	{"PreToolUse", "Read", "pre-read"},
 	{"PreToolUse", "Bash", "pre-bash"},
 	{"PreToolUse", "Grep|Glob", "pre-search"},
+	{"PostToolUse", "Bash|WebFetch", "post-output"},
 	{"PreCompact", "", "pre-compact"},
 	{"SessionEnd", "", "session-end"},
 	{"Stop", "", "stop"},

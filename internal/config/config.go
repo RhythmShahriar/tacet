@@ -27,6 +27,8 @@ var Features = map[string]bool{
 	"skills":  true,  // suggest skills from repeated instructions
 	"speak":   false, // read the final reply aloud
 	"trim":    false, // filter noisy command output
+
+	"bigoutput": false, // experimental: keep long Bash and WebFetch output in .tacet/out
 }
 
 // FeatureNames lists the features in a stable order.
