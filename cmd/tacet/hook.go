@@ -114,7 +114,7 @@ func handle(root string, cfg *config.Config, event string, in *hookInput) (any, 
 	case "prompt":
 		return promptDocs(root, cfg, in), nil
 	case "pre-compact":
-		return nil, writeHandoff(root, cfg, in)
+		return nil, preCompact(root, cfg, in)
 	case "session-end":
 		err := writeHandoff(root, cfg, in)
 		countSession(root, cfg)
@@ -144,6 +144,9 @@ func sessionStart(root string, cfg *config.Config, in *hookInput) any {
 	}
 	if d := sessionDocs(root, cfg); d != "" {
 		parts = append(parts, d)
+	}
+	if c := compactContext(root, cfg, in); c != "" {
+		parts = append(parts, c)
 	}
 	if len(parts) == 0 {
 		return nil
