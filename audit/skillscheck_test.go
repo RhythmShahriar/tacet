@@ -5,6 +5,7 @@ package audit
 
 import (
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -46,7 +47,7 @@ func TestOverlapByJaccard(t *testing.T) {
 		t.Fatalf("want one overlap, got %+v", fs)
 	}
 	f := fs[0]
-	if !strings.Contains(f.Path, "/test-fix/") || f.Fix.ID != "skill-overlap-test-fix" || f.Tokens <= 0 || f.Fix.Tokens != f.Tokens {
+	if !strings.Contains(filepath.ToSlash(f.Path), "/test-fix/") || f.Fix.ID != "skill-overlap-test-fix" || f.Tokens <= 0 || f.Fix.Tokens != f.Tokens {
 		t.Fatalf("the less used one should be hidden: %+v", f)
 	}
 	before, _ := os.ReadFile(f.Path)
@@ -96,7 +97,8 @@ func TestDescriptionLengthAndShorten(t *testing.T) {
 	})
 	got := map[string]core.Finding{}
 	for _, f := range byRule(checks(t, root, nil), "skills/description") {
-		got[f.Path[strings.LastIndex(f.Path, "skills/")+7:strings.LastIndex(f.Path, "/")]] = f
+		p := filepath.ToSlash(f.Path)
+		got[p[strings.LastIndex(p, "skills/")+7:strings.LastIndex(p, "/")]] = f
 	}
 	if len(got) != 3 {
 		t.Fatalf("want over, near and long; got %v", got)

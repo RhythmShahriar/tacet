@@ -89,7 +89,9 @@ func preSearch(root string, cfg *config.Config, in *hookInput) any {
 	if json.Unmarshal(in.ToolInput, &si) != nil {
 		return nil
 	}
-	if si.Path != "" && filepath.IsAbs(si.Path) {
+	// "/x" is a full path to the person even on Windows, where Go calls it
+	// relative: either way it is outside the project.
+	if p := si.Path; p != "" && (filepath.IsAbs(p) || strings.HasPrefix(p, "/") || strings.HasPrefix(p, `\`)) {
 		if rel, err := filepath.Rel(root, si.Path); err != nil || strings.HasPrefix(rel, "..") {
 			return nil // a search outside the project
 		}

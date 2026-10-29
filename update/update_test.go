@@ -18,6 +18,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -211,7 +212,8 @@ func TestInstallReplacesAndKeepsOld(t *testing.T) {
 			if v.tag != "v1.1.0" || smoked != "new-binary 1.1.0" {
 				t.Fatalf("verified tag %q, smoke %q", v.tag, smoked)
 			}
-			if fi, _ := os.Stat(exe); goos != "windows" && fi.Mode().Perm()&0o100 == 0 {
+			// Windows has no executable bit to check.
+			if fi, _ := os.Stat(exe); goos != "windows" && runtime.GOOS != "windows" && fi.Mode().Perm()&0o100 == 0 {
 				t.Fatalf("new binary is not executable: %v", fi.Mode())
 			}
 			left, _ := filepath.Glob(filepath.Join(filepath.Dir(exe), ".tacet-new-*"))
@@ -288,6 +290,9 @@ func TestWindowsSwapRestoresOnFailure(t *testing.T) {
 func TestReplaceUnwritableDir(t *testing.T) {
 	if os.Getuid() == 0 {
 		t.Skip("root writes anywhere")
+	}
+	if runtime.GOOS == "windows" {
+		t.Skip("a folder's mode bits don't stop writes on Windows")
 	}
 	exe := oldBinary(t)
 	dir := filepath.Dir(exe)
