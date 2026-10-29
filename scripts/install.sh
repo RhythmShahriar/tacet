@@ -103,7 +103,7 @@ main() {
 
 	# api_get downloads API URL $1 to file $2 and prints the HTTP status.
 	# The token goes to curl on stdin, so it never shows up in a process
-	# listing, and curl drops it when a redirect leaves the host.
+	# listing. curl drops it when a redirect leaves the host.
 	api_get() {
 		# shellcheck disable=SC2086 # $limits is several flags
 		if [ -n "$token" ]; then
@@ -160,7 +160,7 @@ main() {
 		die "cosign says checksums.txt wasn't signed for $REPO $tag; nothing was installed"
 	}
 
-	# writable reports whether folder $1 exists, or can be made, and takes
+	# writable reports whether folder $1 exists or can be made and takes
 	# a new file.
 	writable() {
 		mkdir -p "$1" 2>/dev/null || return 1
