@@ -45,20 +45,30 @@ const instructions = "Code index tools: use symbols, callers and outline to find
 
 // New builds the server for opts.
 func New(opts Options) *mcp.Server {
+	s, _ := NewWithClose(opts)
+	return s
+}
+
+// NewWithClose builds the server and returns a function that closes the
+// code index it opened, so the database file is released.
+func NewWithClose(opts Options) (*mcp.Server, func() error) {
 	so := &mcp.ServerOptions{}
 	if opts.Map {
 		so.Instructions = instructions
 	}
 	s := mcp.NewServer(&mcp.Implementation{Name: "tacet", Version: opts.Version}, so)
+	x := &index{root: opts.Root}
 	if opts.Map {
-		addCodeTools(s, &index{root: opts.Root})
+		addCodeTools(s, x)
 	}
-	return s
+	return s, x.close
 }
 
 // Run serves on stdin and stdout until the client hangs up.
 func Run(ctx context.Context, opts Options) error {
-	return New(opts).Run(ctx, &mcp.StdioTransport{})
+	s, closeIndex := NewWithClose(opts)
+	defer func() { _ = closeIndex() }()
+	return s.Run(ctx, &mcp.StdioTransport{})
 }
 
 // index opens the code index on first use and refreshes it before each
@@ -68,6 +78,17 @@ type index struct {
 	mu   sync.Mutex
 	ix   *codegraph.Index
 	last time.Time
+}
+
+func (x *index) close() error {
+	x.mu.Lock()
+	defer x.mu.Unlock()
+	if x.ix == nil {
+		return nil
+	}
+	err := x.ix.Close()
+	x.ix = nil
+	return err
 }
 
 func (x *index) get(ctx context.Context) (*codegraph.Index, error) {

@@ -13,7 +13,7 @@ command -v python3 >/dev/null || { echo "skip: python3 is needed to serve the fi
 
 work=$(mktemp -d)
 pid=
-# shellcheck disable=SC2317 # called by the EXIT trap
+# shellcheck disable=SC2317,SC2329 # called by the EXIT trap
 cleanup() {
   [ -z "$pid" ] || kill "$pid" 2>/dev/null || :
   rm -rf "$work"
@@ -96,7 +96,7 @@ check() {
   shift
   if "$@"; then echo "ok   $what"; else echo "FAIL $what"; fail=1; fi
 }
-# shellcheck disable=SC2317 # called through check
+# shellcheck disable=SC2317,SC2329 # called through check
 runs() { [ "$("$1" 2>/dev/null)" = "$2" ]; }
 has() { # has NAME TEXT
   if grep -qF -- "$2" "$work/out"; then echo "ok   $1"; else echo "FAIL $1: no '$2' in"; sed 's/^/     /' "$work/out"; fail=1; fi

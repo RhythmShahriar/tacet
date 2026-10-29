@@ -97,15 +97,28 @@ func TestPromptPointsAtACachedTranscript(t *testing.T) {
 
 	cfg := config.Load(root)
 	out, _ := json.Marshal(promptDocs(root, cfg, &hookInput{Cwd: root, Prompt: "what was decided in standup.wav?"}))
-	if !strings.Contains(string(out), "Read "+p) {
+	if !strings.Contains(string(out), jsonText("Read "+p)) {
 		t.Fatalf("prompt output %s", out)
 	}
 	pre, _ := json.Marshal(preReadAudio(root, json.RawMessage(`{"file_path":"`+clip+`"}`), clip))
-	if !strings.Contains(string(pre), `"file_path":"`+p+`"`) {
+	if !strings.Contains(string(pre), `"file_path":`+jsonQuote(p)) {
 		t.Fatalf("pre-read %s", pre)
 	}
 	cfg.Features["audio"] = false
 	if off := promptDocs(root, cfg, &hookInput{Cwd: root, Prompt: "standup.wav"}); off != nil {
 		t.Fatalf("audio off still answered: %v", off)
 	}
+}
+
+// jsonQuote is s as a JSON string, so Windows backslashes compare as
+// they appear in hook output.
+func jsonQuote(s string) string {
+	b, _ := json.Marshal(s)
+	return string(b)
+}
+
+// jsonText is s escaped the way it appears inside a JSON string.
+func jsonText(s string) string {
+	q := jsonQuote(s)
+	return q[1 : len(q)-1]
 }

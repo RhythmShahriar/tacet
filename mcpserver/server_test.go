@@ -40,7 +40,8 @@ func connect(t *testing.T, opts Options) *mcp.ClientSession {
 	t.Helper()
 	ctx := context.Background()
 	st, ct := mcp.NewInMemoryTransports()
-	ss, err := New(opts).Connect(ctx, st, nil)
+	srv, closeIndex := NewWithClose(opts)
+	ss, err := srv.Connect(ctx, st, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -48,7 +49,7 @@ func connect(t *testing.T, opts Options) *mcp.ClientSession {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = cs.Close(); _ = ss.Close() })
+	t.Cleanup(func() { _ = cs.Close(); _ = ss.Close(); _ = closeIndex() })
 	return cs
 }
 
