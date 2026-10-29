@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 // Package audit checks a project's Claude Code setup for context that
-// loads on every request without paying for itself, and plans the fix.
+// loads on every request without paying for itself and plans the fix.
 package audit
 
 import (

@@ -95,7 +95,7 @@ func (s *Set) StartupTokens() int {
 
 // Load finds the instruction files for root the way Claude Code does:
 // the user file, CLAUDE.md files from the filesystem root down to root,
-// CLAUDE.local.md, AGENTS.md only where no CLAUDE file shadows it, and
+// CLAUDE.local.md, AGENTS.md only where no CLAUDE file shadows it and
 // the rules in .claude/rules. userHome is Claude's config dir; empty
 // skips the user file (tests and CI).
 func Load(root, userHome string) (*Set, error) {

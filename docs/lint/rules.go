@@ -111,7 +111,7 @@ func checkShadowedAgents(s *Set) []core.Finding {
 	if claudeMD != "" {
 		// A Change, not Old/New, so it composes with other fixes to CLAUDE.md.
 		f.Fix = &core.Fix{
-			// Not safe: it makes Claude follow rules it was skipping, but it
+			// Not safe: it makes Claude follow rules it was skipping but it
 			// loads AGENTS.md every session, which adds tokens (measured
 			// +600 to +3,500 on real projects). The person decides.
 			ID: "agents-bridge", Title: "Import AGENTS.md from CLAUDE.md (adds its tokens to every session)", Safe: false,
@@ -258,7 +258,7 @@ func commandTargets(root string) map[string]map[string]bool {
 }
 
 // checkTree flags directory listings: the agent can list a folder when it
-// needs to, and research found overviews don't help.
+// needs to; research found overviews don't help.
 func checkTree(s *Set, d *Doc) []core.Finding {
 	var out []core.Finding
 	for _, b := range fences(d.Body) {

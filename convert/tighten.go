@@ -15,7 +15,7 @@ var (
 
 // Tighten removes what costs tokens and carries nothing: page numbers,
 // headers and footers repeated on every page, whole-line code marks a
-// monospace font produced, and hard line wraps. Paragraph breaks,
+// monospace font produced and hard line wraps. Paragraph breaks,
 // headings, lists, tables and code fences stay.
 func Tighten(md string) string {
 	lines := strings.Split(strings.ReplaceAll(md, "\r\n", "\n"), "\n")

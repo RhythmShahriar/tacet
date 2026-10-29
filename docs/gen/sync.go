@@ -138,7 +138,7 @@ func state(old, next []byte) State {
 
 var blankRun = regexp.MustCompile(`\n{3,}`)
 
-// clean drops HTML comments, which other agents may not strip, and the
+// clean drops HTML comments, which other agents may not strip and the
 // blank lines they leave.
 func clean(src []byte) []byte {
 	s := lint.StripComments(string(src))

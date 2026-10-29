@@ -315,7 +315,7 @@ func mcpServer(tool string) string {
 }
 
 // miss reports a request that wrote most of a large context to the cache
-// again instead of reading it, and guesses why.
+// again instead of reading it and guesses why.
 func miss(prev, t *claude.Turn) (Miss, bool) {
 	if prev == nil {
 		return Miss{}, false

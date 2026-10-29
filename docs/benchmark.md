@@ -40,7 +40,7 @@ default. This page lists each measurement and how to repeat it.
 - Claude Code reads a PDF at about 1.5k tokens a page. The same text as
   Markdown is about 1.1k. Converted text read in full is still cheaper.
 - Claude Code refuses Word, PowerPoint, Excel and audio files before any
-  hook runs, so tacet converts a file as soon as a prompt names it, and
+  hook runs, so tacet converts a file as soon as a prompt names it and
   lists the Office files a repo tracks when a session starts.
 - The AGENTS.md bridge makes Claude follow rules it was skipping but adds
   600 to 3,500 tokens to every session on real projects, so it is a

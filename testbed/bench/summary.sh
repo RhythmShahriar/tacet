@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 #
 # Summarizes ab.sh lines from stdin: mean billed tokens, turns, cost and
-# accuracy per mode, and the change with tacet.
+# accuracy per mode and the change with tacet.
 set -euo pipefail
 jq -s '
 	map(select(.error | not)) | group_by(.mode) | map({

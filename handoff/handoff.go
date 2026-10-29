@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 // Package handoff writes SESSION.md, a short note of where a session
-// left off, from the transcript and git alone (no model call), and
+// left off, from the transcript and git alone (no model call) and
 // decides when the next session should see it.
 package handoff
 

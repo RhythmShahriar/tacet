@@ -92,7 +92,7 @@ func TestTemplatesLeanAndLoaded(t *testing.T) {
 	}
 	for _, f := range []string{"AGENTS.md", "CLAUDE.md", "ARCHITECTURE.md"} {
 		b := read(t, filepath.Join(root, f))
-		if strings.Contains(b, "—") || strings.Contains(b, ", and ") || strings.Contains(b, ", but ") {
+		if strings.Contains(b, "—") || strings.Contains(b, ", and ") || strings.Contains(b, ", but ") { // style:ignore
 			t.Errorf("%s breaks the writing rules", f)
 		}
 	}

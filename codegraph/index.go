@@ -27,7 +27,7 @@ import (
 // MaxFileSize is the largest file indexed; bigger ones are skipped.
 const MaxFileSize = 1 << 20
 
-// maxWorkers caps the parsers at work: each holds a syntax tree, and
+// maxWorkers caps the parsers at work: each holds a syntax tree and
 // past eight the single writer is the bottleneck anyway.
 const maxWorkers = 8
 

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 // Package gen writes instruction files: lean templates for the ones a
-// project lacks, and copies of AGENTS.md for the other agents' formats.
+// project lacks and copies of AGENTS.md for the other agents' formats.
 package gen
 
 import (

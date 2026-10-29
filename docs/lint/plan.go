@@ -25,7 +25,7 @@ type FileChange struct {
 var errChanged = errors.New("file changed since tacet read it")
 
 // Plan runs the fixes' edits in order on the files as they are now, the
-// way fix.Apply will, and returns every touched file in first-touch
+// way fix.Apply will and returns every touched file in first-touch
 // order. Nothing is written.
 func Plan(fixes []*core.Fix) ([]FileChange, error) {
 	var order []string

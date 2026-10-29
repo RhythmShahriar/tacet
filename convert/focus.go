@@ -22,7 +22,7 @@ const FocusTokens = 4_000
 // Focus writes a file holding the outline and the sections of the full
 // text that best match what the person asked, so a question about one
 // part of a long document is answered from a single read. It returns ""
-// when nothing matches well enough, and the caller uses the outline.
+// when nothing matches well enough; the caller then uses the outline.
 func Focus(outlinePath, mdPath, ask string) string {
 	terms := words(ask)
 	if len(terms) == 0 {
