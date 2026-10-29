@@ -35,6 +35,7 @@ var hookEvents = []struct{ event, matcher, name string }{
 	{"UserPromptSubmit", "", "prompt"},
 	{"PreToolUse", "Read", "pre-read"},
 	{"PreToolUse", "Bash", "pre-bash"},
+	{"PreToolUse", "Grep|Glob", "pre-search"},
 	{"PreCompact", "", "pre-compact"},
 	{"SessionEnd", "", "session-end"},
 	{"Stop", "", "stop"},

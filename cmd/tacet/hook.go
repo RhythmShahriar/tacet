@@ -109,6 +109,8 @@ func handle(root string, cfg *config.Config, event string, in *hookInput) (any, 
 			return deny(fmt.Sprintf("tacet guard: this would print %s, which holds secrets. Ask the person for the one value you need instead.", f)), nil
 		}
 		return nil, nil
+	case "pre-search":
+		return preSearch(root, cfg, in), nil
 	case "prompt":
 		return promptDocs(root, cfg, in), nil
 	case "pre-compact":
