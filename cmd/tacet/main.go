@@ -50,6 +50,7 @@ func init() {
 		{"apply", "apply one suggestion by id (used by /tacet)", runApply, true},
 		{"dismiss", "stop suggesting one fix here (used by /tacet)", runDismiss, true},
 		{"hook", "run a hook event (called by Claude Code)", runHook, true},
+		{"plugin", "write the plugin to a folder: tacet plugin write <dir>", runPlugin, true},
 	}
 }
 

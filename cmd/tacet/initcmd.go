@@ -139,3 +139,21 @@ func errString(err error) string {
 	}
 	return err.Error()
 }
+
+// runPlugin writes the plugin without installing it, for
+// claude --plugin-dir and for packaging.
+func runPlugin(a *app, args []string) error {
+	if len(args) != 2 || args[0] != "write" {
+		return fmt.Errorf("%w: tacet plugin write <dir>", errUsage)
+	}
+	bin, err := os.Executable()
+	if err != nil {
+		return err
+	}
+	bin, _ = filepath.EvalSymlinks(bin)
+	if err := plugin.Write(args[1], bin, version); err != nil {
+		return err
+	}
+	fmt.Fprintln(a.out, filepath.Join(args[1], "plugins", plugin.Name))
+	return nil
+}
