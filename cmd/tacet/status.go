@@ -36,6 +36,7 @@ type statusJSON struct {
 	Suggestions []suggestion    `json:"suggestions"`
 	DocReads    int             `json:"document_reads"`
 	DocSaved    int             `json:"document_tokens_saved"`
+	Update      *updateInfo     `json:"update,omitempty"`
 }
 
 // docSavings adds up .tacet/savings.jsonl.
@@ -82,11 +83,15 @@ func runStatus(a *app, _ []string) error {
 	for _, f := range sug {
 		st.Suggestions = append(st.Suggestions, suggestion{ID: f.Fix.ID, Title: f.Fix.Title, Why: f.Message, Tokens: saving(f)})
 	}
+	st.Update = updateStatus()
 	if a.json {
 		return a.writeJSON(st)
 	}
 	w := a.out
 	fmt.Fprintln(w, ui.Banner(version))
+	if u := st.Update; u != nil {
+		fmt.Fprintln(w, ui.Brand.Render(fmt.Sprintf("tacet %s is available: run %s", u.Latest, u.Command)))
+	}
 	fmt.Fprintln(w)
 	fmt.Fprintln(w, ui.Section("savings", -1, width()))
 	if b != nil {
