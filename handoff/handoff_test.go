@@ -62,3 +62,16 @@ func TestNothingToHandOn(t *testing.T) {
 		t.Fatal("empty session should write nothing")
 	}
 }
+
+func TestWantsContinue(t *testing.T) {
+	for _, p := range []string{"continue where we left off", "Resume the refactor", "what were we doing?", "pick up from the last session"} {
+		if !WantsContinue(p) {
+			t.Errorf("%q should continue", p)
+		}
+	}
+	for _, p := range []string{"fix the login bug", "add a retry to fetch", "why does the build fail"} {
+		if WantsContinue(p) {
+			t.Errorf("%q isn't a continuation", p)
+		}
+	}
+}

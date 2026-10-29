@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 
@@ -144,6 +145,11 @@ func ForSession(root, sessionID string, now time.Time) string {
 	}
 	return string(b)
 }
+
+var continueRe = regexp.MustCompile(`(?i)\b(continue|carry on|resume|pick up|keep going|where (we|i|you) (left|stopped)|last session|previous session|left off|from yesterday|what were we)\b`)
+
+// WantsContinue reports whether a prompt asks to carry on earlier work.
+func WantsContinue(prompt string) bool { return continueRe.MatchString(prompt) }
 
 func git(root string, args ...string) string {
 	out, err := exec.Command("git", append([]string{"-C", root}, args...)...).Output() // #nosec G204 -- fixed git subcommands

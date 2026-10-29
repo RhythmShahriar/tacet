@@ -129,11 +129,6 @@ func deny(reason string) any {
 
 func sessionStart(root string, cfg *config.Config, in *hookInput) any {
 	var parts []string
-	if cfg.On("handoff") && in.Source != "resume" {
-		if note := handoff.ForSession(root, in.SessionID, time.Now()); note != "" {
-			parts = append(parts, "Notes from the previous session on this project (tacet SESSION.md):\n\n"+note)
-		}
-	}
 	if n := takeNotice(root); n != "" {
 		parts = append(parts, n)
 	}
@@ -406,10 +401,21 @@ func lastAsk(transcript string) string {
 // read itself (Word, PowerPoint, Excel): it converts them now and says
 // which Markdown file to read, focused on the request.
 func promptDocs(root string, cfg *config.Config, in *hookInput) any {
-	if !cfg.On("convert") || in.Prompt == "" {
+	if in.Prompt == "" {
 		return nil
 	}
 	var notes, shown []string
+	// The handoff note costs tokens, so it is only added when the person
+	// asks to carry on from before.
+	if cfg.On("handoff") && handoff.WantsContinue(in.Prompt) {
+		if note := handoff.ForSession(root, in.SessionID, time.Now()); note != "" {
+			notes = append(notes, "Notes from the previous session on this project (tacet SESSION.md):\n\n"+note)
+			shown = append(shown, "tacet: added the notes from your last session")
+		}
+	}
+	if !cfg.On("convert") {
+		return finishPrompt(notes, shown)
+	}
 	for _, p := range convert.Mentions(root, in.Cwd, in.Prompt) {
 		if !convert.Binary(p) {
 			continue // PDFs are redirected when they're read
@@ -422,12 +428,20 @@ func promptDocs(root string, cfg *config.Config, in *hookInput) any {
 		notes = append(notes, fmt.Sprintf("%s can't be read directly; tacet converted it: Read %s instead.", filepath.Base(p), target))
 		shown = append(shown, recordSaving(root, filepath.Base(p), r.Path, target, nil))
 	}
+	return finishPrompt(notes, shown)
+}
+
+func finishPrompt(notes, shown []string) any {
 	if len(notes) == 0 {
 		return nil
+	}
+	ctx := strings.Join(notes, "\n\n")
+	if len(ctx) > maxContext {
+		ctx = ctx[:maxContext]
 	}
 	return map[string]any{
 		"systemMessage": strings.Join(shown, "\n"),
 		"hookSpecificOutput": map[string]any{
-			"hookEventName": "UserPromptSubmit", "additionalContext": strings.Join(notes, "\n"),
+			"hookEventName": "UserPromptSubmit", "additionalContext": ctx,
 		}}
 }
