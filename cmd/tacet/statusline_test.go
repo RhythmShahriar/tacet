@@ -52,7 +52,7 @@ not json
 func TestStatuslineFull(t *testing.T) {
 	root := savingsProject(t)
 	sub := filepath.Join(root, "src")
-	in := strings.ReplaceAll(strings.Replace(fullStatus, "%s", sub, 1), "%s", root)
+	in := strings.ReplaceAll(strings.Replace(fullStatus, "%s", jsonText(sub), 1), "%s", jsonText(root))
 	got := statusRun(t, in)
 	want := "tacet ▾25k saved · cache 97% · ctx 8% · 5h 38% · 7d 12% · $1.23"
 	if got != want {
