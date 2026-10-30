@@ -1,0 +1,1 @@
+Use a subagent to find every HTTP request matcher module this repository registers outside test files, that is every module whose ID starts with "http.matchers.". Then summarize: list each full module ID with the file it is registered in.

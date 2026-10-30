@@ -32,7 +32,7 @@ for each run:
 5. appends one JSON line to `results/<date>.jsonl` and keeps the raw
    `claude -p` output under `results/raw/<date>/`
 
-Environment: `BENCH_MODEL` (default `haiku`), `BENCH_MAX_TURNS` (30),
+Environment: `BENCH_MODEL` (default the task's `model` file, else `haiku`), `BENCH_MAX_TURNS` (30),
 `BENCH_TIMEOUT` (600 s), `BENCH_KEEP=1` keeps each run's project,
 `BENCH_RESULTS` moves the results, `BENCH_MODES` limits `all.sh`.
 
@@ -63,6 +63,7 @@ Nothing is printed or committed.
 |---|---|---|---|
 | none | Claude Code as installed | nothing | none |
 | tacet | this checkout | built from source; `tacet init --yes` once to install the plugin, then in each project | `mcp__plugin_tacet_tacet` |
+| tacet-subagents | this checkout | as tacet, then `tacet on subagents` in each project (the Explore subagent on Haiku) | `mcp__plugin_tacet_tacet` |
 | rtk | 1.1.0 | release binary (sha256 pinned), `rtk init -g` | none (Bash hook) |
 | caveman | v4.0.1 | `claude plugin marketplace add` + `claude plugin install caveman@caveman`, from a checkout of the tag | its MCP servers, if any |
 | context-mode | v1.0.169 | `claude plugin marketplace add` + `claude plugin install context-mode@context-mode`, from the tag | `mcp__plugin_context-mode_context-mode` |
@@ -85,6 +86,7 @@ clones at a fixed commit; the document text is pinned by sha256.
 | docx | one fact pair from one section | the same text as DOCX with real heading styles | both facts of the note in 6 |
 | go-nav | where a function is defined and every non-test caller | caddy v2.9.1 (279 Go files) | all six files named |
 | py-nav | the same | click 8.1.7 | all three files named |
+| explore-nav | "use a subagent to find" every `http.matchers.*` module and its file; runs on Sonnet (its `model` file) so the built-in Explore isn't already on Haiku | caddy v2.9.1 | all 16 module IDs and five files named |
 | rust-nav | the same | ripgrep 14.1.1 | all three files named |
 | py-fix | fix a failing pytest suite without touching the tests | a small invoice package with one seeded bug | tests untouched and pytest passes |
 | rust-fix | fix a failing cargo test without touching the tests | a small span-set crate with one seeded bug | tests untouched and cargo test passes |
