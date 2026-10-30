@@ -62,7 +62,7 @@ func TestUSD(t *testing.T) {
 	}
 }
 
-// turn is one assistant request with a tool call, and the user line
+// turn is one assistant request with a tool call and the user line
 // returning a result of resultLen characters.
 func turn(id, model string, at time.Time, in, write, read, out int, tool string, resultLen int) string {
 	s := fmt.Sprintf(`{"type":"assistant","timestamp":%q,"sessionId":"s","message":{"id":%q,"role":"assistant","model":%q,"content":[{"type":"tool_use","id":"tu-%s","name":%q,"input":{}}],"usage":{"input_tokens":%d,"cache_creation_input_tokens":%d,"cache_read_input_tokens":%d,"output_tokens":%d}}}`,

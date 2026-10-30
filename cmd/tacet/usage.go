@@ -332,7 +332,7 @@ func rate(part, whole int) float64 {
 }
 
 // usagePaths are the transcripts the usage tables and the comparison
-// read: those written in the last usageDays or since the baseline, and
+// read: those written in the last usageDays or since the baseline and
 // the newest recentSessions from before the baseline.
 func usagePaths(root string, b *Baseline, cut time.Time) []string {
 	all := claude.Transcripts(root) // oldest first
