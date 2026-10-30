@@ -144,6 +144,9 @@ func setFeature(a *app, args []string, on bool) error {
 	if err := c.Set(args[0], on); err != nil {
 		return fmt.Errorf("%w %q; features: %s", err, args[0], strings.Join(config.FeatureNames(), ", "))
 	}
+	if err := featureFiles(a, root, args[0], on); err != nil {
+		return err
+	}
 	if err := c.Save(root); err != nil {
 		return err
 	}

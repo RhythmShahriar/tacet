@@ -43,6 +43,7 @@ func Run(in Input) []core.Finding {
 	out = append(out, SkillChecks(in)...)
 	out = append(out, cacheMisses(in)...)
 	out = append(out, subagentShare(in)...)
+	out = append(out, exploreModel(in)...)
 	out = append(out, memoryIndex(in.Root)...)
 	out = append(out, agentsHook(in.Root)...)
 	out = append(out, attribution(in.Root)...)
@@ -238,19 +239,28 @@ func short(n int) string { return ui.Tokens(n) }
 // biggest lever is then how many run and on which model.
 func subagentShare(in Input) []core.Finding {
 	u := in.Usage
-	if u == nil || u.SubTokens == 0 {
+	share, ok := subagentHeavy(u)
+	if !ok {
 		return nil
 	}
-	all := u.Input + u.CacheWrite + u.CacheRead + u.Output
-	if all == 0 || u.SubTokens*2 < all {
-		return nil
-	}
-	share := float64(u.SubTokens) / float64(all) * 100
 	return []core.Finding{{
 		Rule: "usage/subagents", Severity: core.Medium,
 		Message: fmt.Sprintf("subagents used %.0f%% of all tokens (%d subagents, %s tokens)", share, u.Subagents, short(u.SubTokens)),
 		Hint:    "run search and review agents on a smaller model (model: haiku in the agent's frontmatter) and fewer at once; each one re-reads its own context",
 	}}
+}
+
+// subagentHeavy reports the subagents' share of all tokens in percent
+// and whether it is at least half.
+func subagentHeavy(u *measure.Usage) (float64, bool) {
+	if u == nil || u.SubTokens == 0 {
+		return 0, false
+	}
+	all := u.Input + u.CacheWrite + u.CacheRead + u.Output
+	if all == 0 || u.SubTokens*2 < all {
+		return 0, false
+	}
+	return float64(u.SubTokens) / float64(all) * 100, true
 }
 
 func memoryIndex(root string) []core.Finding {

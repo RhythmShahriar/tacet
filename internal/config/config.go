@@ -28,6 +28,8 @@ var Features = map[string]bool{
 	"testgate": false, // failing tests keep the agent from finishing
 
 	"bigoutput": false, // experimental: keep long Bash and WebFetch output in .tacet/out
+
+	"subagents": false, // the Explore subagent runs on Haiku
 }
 
 // FeatureNames lists the features in a stable order.
