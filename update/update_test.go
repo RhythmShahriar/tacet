@@ -465,3 +465,45 @@ func TestDetect(t *testing.T) {
 		t.Errorf("go install command = %q", m.Command)
 	}
 }
+
+// TestDetectPackageManagers checks the paths Homebrew, Scoop and npm
+// install tacet to (as os.Executable and EvalSymlinks see them) and the
+// command each one prints instead of replacing the binary.
+func TestDetectPackageManagers(t *testing.T) {
+	cases := []struct{ exe, name, cmd string }{
+		// Homebrew cask: Apple silicon, Intel and Linux prefixes.
+		{"/opt/homebrew/Caskroom/tacet/1.2.0/tacet", "brew", BrewCask},
+		{"/usr/local/Caskroom/tacet/1.2.0/tacet", "brew", BrewCask},
+		{"/home/linuxbrew/.linuxbrew/Caskroom/tacet/1.2.0/tacet", "brew", BrewCask},
+		{"/home/me/.linuxbrew/Caskroom/tacet/1.2.0/tacet", "brew", BrewCask},
+		// A formula, should someone package one.
+		{"/usr/local/Cellar/tacet/1.2.0/bin/tacet", "brew", "brew upgrade tacet"},
+		{"/home/linuxbrew/.linuxbrew/Cellar/tacet/1.2.0/bin/tacet", "brew", "brew upgrade tacet"},
+		// Scoop, per user and global.
+		{`C:\Users\me\scoop\apps\tacet\1.2.0\tacet.exe`, "scoop", ScoopCmd},
+		{`C:/Users/me/scoop/apps/tacet/current/tacet.exe`, "scoop", ScoopCmd},
+		{`C:/ProgramData/scoop/apps/tacet/current/tacet.exe`, "scoop", ScoopCmd},
+		// npm global installs, Node from anywhere, Homebrew and Scoop too.
+		{"/usr/local/lib/node_modules/@rhythmsh/tacet-darwin-arm64/bin/tacet", "npm", NpmGlobal},
+		{"/home/me/.nvm/versions/node/v24.15.0/lib/node_modules/@rhythmsh/tacet-linux-x64/bin/tacet", "npm", NpmGlobal},
+		{"/opt/homebrew/lib/node_modules/@rhythmsh/tacet-darwin-arm64/bin/tacet", "npm", NpmGlobal},
+		{"/home/linuxbrew/.linuxbrew/lib/node_modules/@rhythmsh/tacet-linux-arm64/bin/tacet", "npm", NpmGlobal},
+		{`C:\Users\me\AppData\Roaming\npm\node_modules\@rhythmsh\tacet-win32-x64\bin\tacet.exe`, "npm", NpmGlobal},
+		{`C:/Users/me/scoop/persist/nodejs/bin/node_modules/@rhythmsh/tacet-win32-x64/bin/tacet.exe`, "npm", NpmGlobal},
+		{"/home/me/.npm/_npx/0a1b2c/node_modules/@rhythmsh/tacet-linux-x64/bin/tacet", "npm", NpmGlobal},
+	}
+	for _, c := range cases {
+		exe := c.exe
+		if filepath.Separator == '/' {
+			// filepath.ToSlash only rewrites the host's separator.
+			exe = strings.ReplaceAll(exe, `\`, "/")
+		}
+		m := Detect(exe, func(string) string { return "" }, t.TempDir())
+		if m.Name != c.name || m.Command != c.cmd {
+			t.Errorf("Detect(%s) = %s %q, want %s %q", c.exe, m.Name, m.Command, c.name, c.cmd)
+		}
+		if m.SelfManaged() {
+			t.Errorf("Detect(%s) would replace a package manager's binary", c.exe)
+		}
+	}
+}
