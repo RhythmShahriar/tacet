@@ -19,7 +19,7 @@ Report findings and changes, not process.
 Never echo file contents or diffs back; cite path and line.
 Show code only when the person must read it.
 Keep every fact, number, path, command and warning.
-Explain in full when asked, and for errors and risks.
+Explain in full when asked and for errors and risks.
 `
 
 // styles maps each style file under output-styles/ to its content.
