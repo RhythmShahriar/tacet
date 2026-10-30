@@ -83,6 +83,12 @@ section { margin-top: 32px; }
 .note { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
 .split { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
 .cmpwrap { overflow-x: auto; }
+.cmp td.barcell { width: 22%; min-width: 72px; }
+.cmp td.barcell .bar { height: 6px; }
+.cmp tr.total td { font-weight: 600; border-top: 2px solid var(--line); }
+.cmp td.label { overflow-wrap: anywhere; }
+.est { color: var(--muted); font-size: 12px; font-weight: 400; text-transform: none; letter-spacing: 0; }
+h3 { font-size: 14px; margin: 20px 0 8px; font-weight: 600; }
 footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; text-align: center; }
 footer a { color: inherit; }
 </style>
@@ -114,6 +120,72 @@ footer a { color: inherit; }
   <p class="note">Billed numbers count main sessions only. Subagents start small and fresh, so they are shown on their own below.</p>
   {{else}}
   <p class="empty">No baseline yet. Run <code>tacet init</code> once and this compares every later session against it.</p>
+  {{end}}
+</section>
+
+{{with .OnVsBefore}}
+<section>
+  <h2>tacet on vs before <span class="est">· estimate</span></h2>
+  {{if .Enough}}
+  {{if .Saved}}<div class="tiles"><div class="tile"><div class="k">estimated saving</div><div class="v dot num">{{.Saved}}</div><div class="s">over {{plural .Since "main-session request"}} since init, at list prices</div></div></div>{{end}}
+  <div class="card cmpwrap"{{if .Saved}} style="margin-top:12px"{{end}}>
+    <table class="cmp">
+      <tr><th>main sessions</th><th class="num">before init</th><th class="num">tacet on</th><th class="num">change</th></tr>
+      {{range .Rows}}<tr><td>{{.Label}}</td><td class="num mono">{{.Before}}</td><td class="num mono">{{.After}}</td><td class="num {{.Class}}">{{.Delta}}</td></tr>
+      {{end}}
+    </table>
+  </div>
+  <p class="note">Main-session requests only, from your transcripts. Dollar figures are estimates at Anthropic's list prices{{if .Partial}}; requests on a model without a known price count as $0{{end}}.</p>
+  {{else}}
+  <p class="empty">{{.Reason}}.</p>
+  {{end}}
+</section>
+{{end}}
+
+<section>
+  <h2>Usage, last 14 days <span class="est">· cost is an estimate</span></h2>
+  {{with .Usage}}
+  <h3>By day</h3>
+  <div class="card cmpwrap">
+    <table class="cmp">
+      <tr><th>day</th><th class="num">requests</th><th class="num">input</th><th class="num">cache write</th><th class="num">cache read</th><th class="num">output</th><th class="num">total</th><th class="num">est. cost</th></tr>
+      {{range .Days}}<tr><td>{{.Label}}</td><td class="num mono">{{.Requests}}</td><td class="num mono">{{.Input}}</td><td class="num mono">{{.Write}}</td><td class="num mono">{{.Read}}</td><td class="num mono">{{.Out}}</td><td class="num mono">{{.Total}}</td><td class="num mono">{{.Cost}}</td></tr>
+      {{end}}{{with .DayTotal}}<tr class="total"><td>{{.Label}}</td><td class="num mono">{{.Requests}}</td><td class="num mono">{{.Input}}</td><td class="num mono">{{.Write}}</td><td class="num mono">{{.Read}}</td><td class="num mono">{{.Out}}</td><td class="num mono">{{.Total}}</td><td class="num mono">{{.Cost}}</td></tr>{{end}}
+    </table>
+  </div>
+  <div class="split">
+    <div>
+      <h3>By model</h3>
+      <div class="card cmpwrap">
+        <table class="cmp">
+          <tr><th>model</th><th class="num">requests</th><th class="num">tokens</th><th class="num">est. cost</th><th>share</th></tr>
+          {{range .Models}}<tr><td class="label mono">{{.Label}}</td><td class="num mono">{{.Requests}}</td><td class="num mono">{{.Total}}</td><td class="num mono">{{.Cost}}</td><td class="barcell"><div class="bar"><span style="width:{{printf "%.1f" .Pct}}%"></span></div></td></tr>
+          {{end}}
+        </table>
+      </div>
+    </div>
+    <div>
+      <h3>Main sessions and subagents</h3>
+      <div class="card cmpwrap">
+        <table class="cmp">
+          <tr><th>who</th><th class="num">requests</th><th class="num">tokens</th><th class="num">est. cost</th><th>share</th></tr>
+          {{range .Who}}<tr><td>{{.Label}}</td><td class="num mono">{{.Requests}}</td><td class="num mono">{{.Total}}</td><td class="num mono">{{.Cost}}</td><td class="barcell"><div class="bar"><span style="width:{{printf "%.1f" .Pct}}%"></span></div></td></tr>
+          {{end}}
+        </table>
+      </div>
+    </div>
+  </div>
+  <h3>Top tools</h3>
+  <div class="card cmpwrap">
+    <table class="cmp">
+      <tr><th>tool</th><th class="num">calls</th><th class="num">result tokens</th><th>share of calls</th></tr>
+      {{range .Tools}}<tr><td class="label mono">{{.Label}}</td><td class="num mono">{{.Requests}}</td><td class="num mono">{{.Total}}</td><td class="barcell"><div class="bar"><span style="width:{{printf "%.1f" .Pct}}%"></span></div></td></tr>
+      {{else}}<tr><td colspan="4" class="same">No tool calls.</td></tr>{{end}}
+    </table>
+  </div>
+  <p class="note">From this project's transcripts since {{.Since}}. Cost is estimated from tokens at Anthropic's list prices, with cache writes at the 5-minute rate; your bill or plan may differ.{{if .Unpriced}} No price for {{range $i, $m := .Unpriced}}{{if $i}}, {{end}}{{$m}}{{end}}, counted as $0.{{end}} Result tokens are estimated from the text each tool returned.</p>
+  {{else}}
+  <p class="empty">No requests in the last 14 days.</p>
   {{end}}
 </section>
 

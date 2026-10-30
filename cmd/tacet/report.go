@@ -19,6 +19,7 @@ import (
 
 	"github.com/RhythmShahriar/tacet/internal/config"
 	"github.com/RhythmShahriar/tacet/internal/ui"
+	"github.com/RhythmShahriar/tacet/measure"
 )
 
 //go:embed report.html.tmpl
@@ -71,6 +72,8 @@ type reportData struct {
 	DocSaved    string
 	DocFiles    []reportBar
 	Suggestions []suggestion
+	Usage       *usageTables // ccusage-style tables of the last usageDays
+	OnVsBefore  *onVsBefore  // main sessions before and after init, with cost
 }
 
 // missCauses explains each cache-miss cause in plain words.
@@ -162,6 +165,12 @@ func buildReport(root string) (*reportData, error) {
 		d.Compare = append(d.Compare, reportCompare{Label: "main-session requests", Before: fmt.Sprint(b.RequestsMain), After: fmt.Sprint(u.MainRequests), Class: "same"})
 		d.Compare = append(d.Compare, reportCompare{Label: "sessions measured", Before: fmt.Sprint(b.Sessions), After: fmt.Sprint(u.Sessions), Class: "same"})
 	}
+
+	now := time.Now()
+	cut := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.Local).AddDate(0, 0, 1-usageDays)
+	sessions := measure.ReadSessions(usagePaths(root, b, cut))
+	d.Usage = buildUsage(sessions, cut)
+	d.OnVsBefore = buildOnVsBefore(sessions, b)
 
 	causes, counts := map[string]int{}, map[string]int{}
 	for _, m := range u.Misses {

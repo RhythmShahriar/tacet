@@ -152,7 +152,7 @@ A hook call takes about 10 milliseconds. Converting a document happens once and 
 <details>
 <summary>Does it work in VS Code?</summary>
 
-Yes. The plugin, `/tacet` and the hooks work the same in the VS Code extension as in the terminal. The optional statusline segment shows only in the terminal.
+Yes. The plugin, `/tacet` and the hooks work the same in the VS Code extension as in the terminal. The optional statusline segment (`tacet statusline --install`) shows only in the terminal, not in the VS Code extension.
 
 </details>
 
@@ -166,7 +166,8 @@ Most people only run `tacet init`. For a look or a change:
 | Command | Does |
 |---|---|
 | `tacet` or `tacet status` | what tacet saved and what is waiting for you |
-| `tacet report` | writes `.tacet/report.html` and opens it (`--no-open` to skip) |
+| `tacet report` | writes `.tacet/report.html` and opens it (`--no-open` to skip): savings since init, usage and estimated cost by day, model and tool for the last 14 days |
+| `tacet statusline --install` | adds tokens saved today, cache hits, context and rate limits to Claude Code's statusline, terminal only (`--chain` keeps a statusline you already have) |
 | `tacet measure` | context loaded at startup and what past sessions billed |
 | `tacet audit` | setup findings, each with a fix |
 | `tacet docs lint` | checks `CLAUDE.md`, `AGENTS.md` and rules files (`fix`, `init` and `sync` change them) |

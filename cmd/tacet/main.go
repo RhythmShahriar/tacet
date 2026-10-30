@@ -50,6 +50,7 @@ func init() {
 		{"check", "docs and audit for CI; exits 1 on findings", runCheck, false},
 		{"transcribe", "audio to a Markdown transcript: tacet transcribe <file>", runTranscribe, false},
 		{"report", "write an HTML report of what tacet saved: .tacet/report.html", runReport, false},
+		{"statusline", "savings in Claude Code's statusline: tacet statusline --install", runStatusline, false},
 		{"update", "update tacet to the latest signed release", runUpdate, false},
 		{"version", "print the version", runVersion, false},
 		{"apply", "apply one suggestion by id (used by /tacet)", runApply, true},
