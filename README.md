@@ -47,7 +47,7 @@ Every number in this README comes from runs anyone can repeat with one command: 
 ## How it works
 
 1. **Measure.** `tacet init` adds up what every session loads before you type and what your past sessions billed. That becomes the baseline.
-2. **Fix what is safe.** It applies only changes it can undo, after one yes. Everything else waits as a suggestion you accept or dismiss with `/tacet` inside Claude Code.
+2. **Fix what is safe.** It applies only changes it can undo, after one yes. It asks one question: which model search subagents should use (Haiku is cheapest; your main model still does the thinking). Everything else waits as a suggestion you accept or dismiss with `/tacet` inside Claude Code.
 3. **Work on its own.** A Claude Code plugin runs tacet at the right moments: when a file is read, a search runs, a prompt names a document, a session compacts or ends.
 4. **Prove it.** `/tacet`, `tacet status` and `tacet report` show what was saved against the baseline, from your own sessions.
 
@@ -173,6 +173,7 @@ Most people only run `tacet init`. For a look or a change:
 | `tacet docs lint` | checks `CLAUDE.md`, `AGENTS.md` and rules files (`fix`, `init` and `sync` change them) |
 | `tacet skills new "<what>"` | drafts a skill from a description (or the latest session with `--from-session`) and writes it after a yes |
 | `tacet skills add <owner/repo/path[@ref]>` | imports a public skill pinned to a commit after a yes; never overwrites, refuses scripts unless `--allow-scripts` (`--list` shows examples) |
+| `tacet subagents haiku\|sonnet\|main` | which model the read-only search subagent uses (no argument shows the current one) |
 | `tacet skills check` | skills that never trigger, run long or overlap, with the startup tokens each fix saves |
 | `tacet on <feature>` / `tacet off <feature>` | turns a feature on or off for this project |
 | `tacet undo` | reverts tacet's last change |
@@ -200,7 +201,7 @@ Every command takes `--json` for machine output, `-y` to skip prompts and `-C <d
 | `terse` | off | selects the `tacet:terse` output style: results first, no preamble or recap, no file contents repeated back, every fact and path kept |
 | `lesscode` | off | selects the `tacet:lesscode` output style: `terse` plus the smallest change that works and no speculative abstractions |
 | `testgate` | off | runs the tests when the agent tries to finish after editing code and sends it back on failures, at most twice a session |
-| `subagents` | off | runs the built-in Explore subagent on Haiku through a project agent file (`.claude/agents/explore.md`): cheaper searches that may miss on hard ones; general-purpose and Plan stay on the main model |
+| `subagents` | off | `tacet init` asks which model the built-in Explore (search) subagent uses: Haiku (recommended, cheapest), Sonnet or your main model. Only that read-only agent changes; your main model still plans and writes the code. Change it any time with `tacet subagents haiku\|sonnet\|main` |
 
 The same switches live in `.tacet/config.yaml`, with `audit_every` for the number of sessions between quiet re-audits and `budget` for the budget thresholds.
 
