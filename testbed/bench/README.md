@@ -63,6 +63,8 @@ Nothing is printed or committed.
 |---|---|---|---|
 | none | Claude Code as installed | nothing | none |
 | tacet | this checkout | built from source; `tacet init --yes` once to install the plugin, then in each project | `mcp__plugin_tacet_tacet` |
+| tacet-terse | this checkout | as tacet, then `tacet on terse` in each project (output style `tacet:terse`) | `mcp__plugin_tacet_tacet` |
+| concise | Claude Code as installed (v2.1.237 or later) | nothing; `outputStyle` `Concise` in each project's settings.local.json | none |
 | rtk | 1.1.0 | release binary (sha256 pinned), `rtk init -g` | none (Bash hook) |
 | caveman | v4.0.1 | `claude plugin marketplace add` + `claude plugin install caveman@caveman`, from a checkout of the tag | its MCP servers, if any |
 | context-mode | v1.0.169 | `claude plugin marketplace add` + `claude plugin install context-mode@context-mode`, from the tag | `mcp__plugin_context-mode_context-mode` |
