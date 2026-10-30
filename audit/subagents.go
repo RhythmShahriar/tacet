@@ -84,18 +84,55 @@ func agentName(s string) string {
 	return ""
 }
 
+// SubagentModels are the models the Explore agent can be set to, cheapest
+// first. "main" means no agent file: Explore runs on the main model.
+var SubagentModels = []string{"haiku", "sonnet", "main"}
+
+// ExploreAgentFor is the agent file for model.
+func ExploreAgentFor(model string) string {
+	return strings.Replace(ExploreAgent, "\nmodel: haiku\n", "\nmodel: "+model+"\n", 1)
+}
+
+// ExploreModelOf reads the model from an agent file tacet wrote, or "".
+func ExploreModelOf(b []byte) string {
+	if !IsTacetExplore(b) {
+		return ""
+	}
+	for _, l := range strings.Split(string(b), "\n") {
+		if v, ok := strings.CutPrefix(l, "model:"); ok {
+			return strings.TrimSpace(v)
+		}
+	}
+	return ""
+}
+
 // ExploreOnFix writes the Haiku Explore agent. It refuses to replace an
 // Explore agent the person wrote.
-func ExploreOnFix(root string) *core.Fix {
+func ExploreOnFix(root string) *core.Fix { return ExploreModelFix(root, "haiku") }
+
+// ExploreModelFix writes tacet's Explore agent on model, replacing an
+// earlier one tacet wrote. It refuses to replace one the person wrote.
+func ExploreModelFix(root, model string) *core.Fix {
+	title := "Run the Explore subagent on " + displayModel(model)
+	if model == "haiku" {
+		title += " (cheaper, may miss on hard searches)"
+	}
 	return &core.Fix{
-		ID: ExploreFixID, Title: "Run the Explore subagent on Haiku (cheaper, may miss on hard searches)", Safe: false,
+		ID: ExploreFixID, Title: title, Safe: false,
 		Edits: []core.Edit{{Path: ExploreAgentPath(root), Change: func(cur []byte) ([]byte, error) {
 			if cur != nil && !IsTacetExplore(cur) {
 				return nil, fmt.Errorf("an agent file of your own is already there")
 			}
-			return []byte(ExploreAgent), nil
+			return []byte(ExploreAgentFor(model)), nil
 		}}},
 	}
+}
+
+func displayModel(m string) string {
+	if m == "" {
+		return m
+	}
+	return strings.ToUpper(m[:1]) + m[1:]
 }
 
 // ExploreOffFix removes the agent file tacet wrote, so Explore runs on

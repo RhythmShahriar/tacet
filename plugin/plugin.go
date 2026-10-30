@@ -129,7 +129,7 @@ func Skill(bin string) string {
 name: tacet
 description: Show what tacet saved on this project and the suggestions waiting for a yes.
 disable-model-invocation: true
-allowed-tools: Bash(` + b + ` status:*), Bash(` + b + ` apply:*), Bash(` + b + ` dismiss:*), Bash(` + b + ` on:*), Bash(` + b + ` off:*), Bash(` + b + ` undo:*), Bash(` + b + ` skills new:*)
+allowed-tools: Bash(` + b + ` status:*), Bash(` + b + ` apply:*), Bash(` + b + ` dismiss:*), Bash(` + b + ` on:*), Bash(` + b + ` off:*), Bash(` + b + ` undo:*), Bash(` + b + ` skills new:*), Bash(` + b + ` subagents:*)
 ---
 <!-- tacet · github.com/RhythmShahriar/tacet -->
 
@@ -141,7 +141,7 @@ Run ` + "`" + b + ` status --json` + "`" + ` and show the person, briefly:
 When it reports ` + "`update`" + `, add one line first: tacet <latest> is available: run <command>.
 
 Then ask which suggestions to apply. For each yes run ` + "`" + b + ` apply <id>` + "`" + `; for each no run ` + "`" + b + ` dismiss <id>` + "`" + `.
-Never apply a suggestion the person did not choose. If they ask to change a feature, run ` + "`" + b + ` on <feature>` + "`" + ` or ` + "`" + b + ` off <feature>` + "`" + `.
+Never apply a suggestion the person did not choose. If they ask to change a feature, run ` + "`" + b + ` on <feature>` + "`" + ` or ` + "`" + b + ` off <feature>` + "`" + `. To change which model search subagents use, run ` + "`" + b + ` subagents haiku` + "`" + `, ` + "`" + b + ` subagents sonnet` + "`" + ` or ` + "`" + b + ` subagents main` + "`" + ` (main means no change from their main model).
 
 If the person says "make this a skill" or types /tacet skill <what>, run ` + "`" + b + ` skills new --from-session --json` + "`" + `, adding <what> in quotes when given.
 Show the draft's path, description and steps. Only on a yes run the same command with --yes in place of --json; it never overwrites a skill.

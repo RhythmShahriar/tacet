@@ -6,11 +6,14 @@ package main
 import (
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 
+	"github.com/RhythmShahriar/tacet/audit"
 	"github.com/RhythmShahriar/tacet/core"
 	"github.com/RhythmShahriar/tacet/fix"
 	"github.com/RhythmShahriar/tacet/handoff"
@@ -24,10 +27,20 @@ import (
 // fixes after one yes, install the plugin and hand over to the hooks.
 func runInit(a *app, args []string) error {
 	noPlugin := false
-	for _, x := range args {
-		if x == "--no-plugin" {
+	subModel := ""
+	for i := 0; i < len(args); i++ {
+		switch x := args[i]; {
+		case x == "--no-plugin":
 			noPlugin = true
+		case x == "--subagents" && i+1 < len(args):
+			subModel = strings.ToLower(args[i+1])
+			i++
+		case strings.HasPrefix(x, "--subagents="):
+			subModel = strings.ToLower(strings.TrimPrefix(x, "--subagents="))
 		}
+	}
+	if subModel != "" && !slices.Contains(audit.SubagentModels, subModel) {
+		return fmt.Errorf("%w: --subagents haiku|sonnet|main", errUsage)
 	}
 	root := a.root()
 	w := a.out
@@ -94,6 +107,10 @@ func runInit(a *app, args []string) error {
 				return err
 			}
 		}
+	}
+
+	if err := chooseSubagents(a, root, subModel); err != nil {
+		return err
 	}
 
 	pluginErr := error(nil)
@@ -183,4 +200,51 @@ func runPlugin(a *app, args []string) error {
 	}
 	fmt.Fprintln(a.out, filepath.Join(args[1], "plugins", plugin.Name))
 	return nil
+}
+
+// chooseSubagents asks which model search subagents should use, the one
+// choice init leaves to the person: it trades cost against how hard a
+// search the cheaper model gets right. --subagents answers it; --yes
+// takes the recommended Haiku; without a terminal nothing changes.
+func chooseSubagents(a *app, root, model string) error {
+	if audit.ProjectExplore(root) != "" && !audit.IsTacetExplore(readOrNil(audit.ExploreAgentPath(root))) {
+		return nil // the person's own Explore agent stays
+	}
+	switch {
+	case model != "":
+	case a.yes:
+		model = "haiku"
+	case interactive() && !a.json:
+		model = "haiku"
+		err := huh.NewSelect[string]().
+			Title("Which model should search subagents use?").
+			Description("Only the read-only Explore agent changes. Your main model still plans and writes the code.").
+			Options(
+				huh.NewOption("Haiku: cheapest, recommended (about 40% lower cost in tacet's benchmark)", "haiku"),
+				huh.NewOption("Sonnet: in between", "sonnet"),
+				huh.NewOption("My main model: no change", "main"),
+			).Value(&model).Run()
+		if errors.Is(err, huh.ErrUserAborted) {
+			return nil
+		}
+		if err != nil {
+			return err
+		}
+	default:
+		return nil
+	}
+	if a.json {
+		quiet := *a
+		quiet.out = io.Discard
+		return runSubagents(&quiet, []string{model})
+	}
+	return runSubagents(a, []string{model})
+}
+
+func readOrNil(p string) []byte {
+	b, err := os.ReadFile(p) // #nosec G304 -- tacet's own agent file path
+	if err != nil {
+		return nil
+	}
+	return b
 }

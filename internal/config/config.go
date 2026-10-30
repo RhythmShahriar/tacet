@@ -52,6 +52,17 @@ type Config struct {
 	AuditEvery int `yaml:"audit_every,omitempty"`
 	// Budget sets the thresholds of the budget feature.
 	Budget Budget `yaml:"budget,omitempty"`
+	// SubagentModel is the model the subagents feature gives the Explore
+	// agent: haiku (default) or sonnet.
+	SubagentModel string `yaml:"subagent_model,omitempty"`
+}
+
+// ExploreModel is the model for the Explore agent, haiku when unset.
+func (c *Config) ExploreModel() string {
+	if c.SubagentModel == "" {
+		return "haiku"
+	}
+	return c.SubagentModel
 }
 
 // Budget is the session budget the budget feature warns against.
