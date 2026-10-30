@@ -171,6 +171,7 @@ Most people only run `tacet init`. For a look or a change:
 | `tacet audit` | setup findings, each with a fix |
 | `tacet docs lint` | checks `CLAUDE.md`, `AGENTS.md` and rules files (`fix`, `init` and `sync` change them) |
 | `tacet skills new "<what>"` | drafts a skill from a description (or the latest session with `--from-session`) and writes it after a yes |
+| `tacet skills add <owner/repo/path[@ref]>` | imports a public skill pinned to a commit after a yes; never overwrites, refuses scripts unless `--allow-scripts` (`--list` shows examples) |
 | `tacet skills check` | skills that never trigger, run long or overlap, with the startup tokens each fix saves |
 | `tacet on <feature>` / `tacet off <feature>` | turns a feature on or off for this project |
 | `tacet undo` | reverts tacet's last change |
@@ -192,13 +193,14 @@ Every command takes `--json` for machine output, `-y` to skip prompts and `-C <d
 | `audio` | on | audio read as a transcript, asking before the first download |
 | `map` | on | code map for the MCP tools |
 | `skills` | on | suggests skills from repeated instructions |
+| `budget` | off | tells you once per threshold (80% and 100% by default) when a session nears its token budget, set as `budget: {session_tokens: 2000000, warn_at: [0.8, 1.0]}`; never blocks |
 | `bigoutput` | off | experimental: keeps long Bash and WebFetch output in `.tacet/out` and shows the agent the start, the end and the errors |
 | `feedback` | off | runs the project's own linter or type checker (ruff, pyright, cargo check, tsc, go vet) on each edited file and shows the agent only the failures |
 | `terse` | off | selects the `tacet:terse` output style: results first, no preamble or recap, no file contents repeated back, every fact and path kept |
 | `lesscode` | off | selects the `tacet:lesscode` output style: `terse` plus the smallest change that works and no speculative abstractions |
 | `testgate` | off | runs the tests when the agent tries to finish after editing code and sends it back on failures, at most twice a session |
 
-The same switches live in `.tacet/config.yaml`, with `audit_every` for the number of sessions between quiet re-audits.
+The same switches live in `.tacet/config.yaml`, with `audit_every` for the number of sessions between quiet re-audits and `budget` for the budget thresholds.
 
 </details>
 

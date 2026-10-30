@@ -27,6 +27,8 @@ var Features = map[string]bool{
 	"feedback": false, // lint and type errors shown right after an edit
 	"testgate": false, // failing tests keep the agent from finishing
 
+	"budget": false, // warn once per threshold when a session nears its token budget
+
 	"bigoutput": false, // experimental: keep long Bash and WebFetch output in .tacet/out
 	"terse":     false, // output style tacet:terse, results first with no preamble or recap
 	"lesscode":  false, // output style tacet:lesscode, terse plus the smallest change that works
@@ -47,6 +49,43 @@ type Config struct {
 	Features map[string]bool `yaml:"features"`
 	// Sessions between quiet re-audits run by the session-end hook.
 	AuditEvery int `yaml:"audit_every,omitempty"`
+	// Budget sets the thresholds of the budget feature.
+	Budget Budget `yaml:"budget,omitempty"`
+}
+
+// Budget is the session budget the budget feature warns against.
+type Budget struct {
+	// SessionTokens is every token one session may process, cache
+	// reads included, before the last warning.
+	SessionTokens int `yaml:"session_tokens,omitempty"`
+	// SessionCostUSD is an optional cost budget, checked only when the
+	// status line left Claude Code's own cost estimate in .tacet/limits.json.
+	SessionCostUSD float64 `yaml:"session_cost_usd,omitempty"`
+	// WarnAt are the fractions of the budget that each warn once.
+	WarnAt []float64 `yaml:"warn_at,omitempty"`
+}
+
+// DefaultSessionTokens is the token budget when none is set.
+const DefaultSessionTokens = 2_000_000
+
+// Limits is the budget with defaults filled in and WarnAt sorted, each
+// fraction above 0.
+func (b Budget) Limits() Budget {
+	if b.SessionTokens <= 0 {
+		b.SessionTokens = DefaultSessionTokens
+	}
+	var at []float64
+	for _, f := range b.WarnAt {
+		if f > 0 {
+			at = append(at, f)
+		}
+	}
+	if len(at) == 0 {
+		at = []float64{0.8, 1.0}
+	}
+	sort.Float64s(at)
+	b.WarnAt = at
+	return b
 }
 
 // Dir is the project's .tacet folder.
