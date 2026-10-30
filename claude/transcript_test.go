@@ -65,3 +65,23 @@ func TestEncodeDir(t *testing.T) {
 		t.Fatal(got)
 	}
 }
+
+func TestToolResults(t *testing.T) {
+	in := `{"type":"assistant","timestamp":"2026-10-29T01:00:05Z","message":{"id":"m1","role":"assistant","content":[{"type":"tool_use","id":"t1","name":"Bash","input":{}},{"type":"tool_use","id":"t2","name":"Grep","input":{}}],"usage":{"output_tokens":5}}}
+{"type":"user","timestamp":"2026-10-29T01:00:06Z","message":{"role":"user","content":[{"type":"tool_result","tool_use_id":"t1","content":"hello"},{"type":"tool_result","tool_use_id":"t2","content":[{"type":"text","text":"abc"},{"type":"text","text":"de"}]}]}}
+`
+	s, err := ParseSession(strings.NewReader(in))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(s.Turns) != 2 {
+		t.Fatalf("%d turns", len(s.Turns))
+	}
+	a, u := s.Turns[0], s.Turns[1]
+	if len(a.ToolIDs) != 2 || a.ToolIDs[0] != "t1" || a.ToolIDs[1] != "t2" {
+		t.Errorf("tool ids %v", a.ToolIDs)
+	}
+	if u.Results["t1"] != 5 || u.Results["t2"] != 5 || u.Human {
+		t.Errorf("results %v human %v", u.Results, u.Human)
+	}
+}

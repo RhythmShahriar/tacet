@@ -35,6 +35,11 @@ type Turn struct {
 	Skills    []string // skills it invoked through the Skill tool
 	Files     []string // file paths it passed to Read
 	Human     bool     // a prompt the person typed, not a tool result or hook
+	// ToolIDs pairs with Tools: the tool_use id of each call.
+	ToolIDs []string
+	// Results maps a tool_use id to the bytes of text its tool_result
+	// carried, on the user line that returned it.
+	Results map[string]int
 }
 
 // Session is one transcript file read into turns.
@@ -63,10 +68,13 @@ type rawLine struct {
 }
 
 type block struct {
-	Type  string `json:"type"`
-	Text  string `json:"text"`
-	Name  string `json:"name"`
-	Input struct {
+	Type      string          `json:"type"`
+	Text      string          `json:"text"`
+	Name      string          `json:"name"`
+	ID        string          `json:"id"`
+	ToolUseID string          `json:"tool_use_id"`
+	Content   json.RawMessage `json:"content"`
+	Input     struct {
 		Skill    string `json:"skill"`
 		FilePath string `json:"file_path"`
 	} `json:"input"`
@@ -120,6 +128,7 @@ func ParseSession(r io.Reader) (*Session, error) {
 		case "user":
 			t.Text = userText(l.Message.Content)
 			t.Human = t.Text != "" && !l.IsMeta && (l.Origin == nil || l.Origin.Kind == "human")
+			t.Results = toolResults(l.Message.Content)
 		default:
 			continue
 		}
@@ -144,6 +153,7 @@ func addTools(t *Turn, raw json.RawMessage) {
 			continue
 		}
 		t.Tools = append(t.Tools, b.Name)
+		t.ToolIDs = append(t.ToolIDs, b.ID)
 		if b.Name == "Skill" && b.Input.Skill != "" {
 			t.Skills = append(t.Skills, b.Input.Skill)
 		}
@@ -177,6 +187,39 @@ func userText(raw json.RawMessage) string {
 		}
 	}
 	return strings.Join(parts, "\n")
+}
+
+// toolResults is the size in bytes of each tool_result on a user
+// line, by the tool_use id it answers. Content is a string or a list of
+// blocks; only text counts.
+func toolResults(raw json.RawMessage) map[string]int {
+	var bs []block
+	if json.Unmarshal(raw, &bs) != nil {
+		return nil
+	}
+	var out map[string]int
+	for _, b := range bs {
+		if b.Type != "tool_result" || b.ToolUseID == "" {
+			continue
+		}
+		n := 0
+		var s string
+		if json.Unmarshal(b.Content, &s) == nil {
+			n = len(s)
+		} else {
+			var inner []block
+			if json.Unmarshal(b.Content, &inner) == nil {
+				for _, x := range inner {
+					n += len(x.Text)
+				}
+			}
+		}
+		if out == nil {
+			out = map[string]int{}
+		}
+		out[b.ToolUseID] += n
+	}
+	return out
 }
 
 func cleanPrompt(s string) string {
