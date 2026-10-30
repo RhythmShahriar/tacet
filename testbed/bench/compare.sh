@@ -12,7 +12,7 @@
 #   tasks: the folders under tasks/ (pdf-part, go-nav, py-fix, ...)
 #
 # Environment:
-#   BENCH_MODEL      model for claude -p (default haiku)
+#   BENCH_MODEL      model for claude -p (default: the task's model file, else haiku)
 #   BENCH_WARM       1 (default) warms the cache before each run; 0 skips it
 #   BENCH_MAX_TURNS  turn cap (default 30, a task can lower or raise it)
 #   BENCH_TIMEOUT    seconds per run (default 600)
@@ -28,11 +28,11 @@ set -euo pipefail
 
 [ $# -ge 2 ] || { sed -n '5,22p' "$0" | sed 's/^# \{0,1\}//' >&2; exit 2; }
 task=$1 mode=$2 reps=${3:-1}
-model=${BENCH_MODEL:-haiku}
 timeout=${BENCH_TIMEOUT:-600}
 first=${BENCH_REP:-1}
 results=${BENCH_RESULTS:-$BENCH/results}
 tdir=$BENCH/tasks/$task
+model=${BENCH_MODEL:-$(cat "$tdir/model" 2>/dev/null || echo haiku)}
 [ -f "$tdir/prompt.txt" ] || die "no such task: $task (see tasks/)"
 valid_mode "$mode" || die "no such mode: $mode (one of: $MODES)"
 command -v jq >/dev/null || die "jq is needed"

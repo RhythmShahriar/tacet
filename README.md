@@ -200,6 +200,7 @@ Every command takes `--json` for machine output, `-y` to skip prompts and `-C <d
 | `terse` | off | selects the `tacet:terse` output style: results first, no preamble or recap, no file contents repeated back, every fact and path kept |
 | `lesscode` | off | selects the `tacet:lesscode` output style: `terse` plus the smallest change that works and no speculative abstractions |
 | `testgate` | off | runs the tests when the agent tries to finish after editing code and sends it back on failures, at most twice a session |
+| `subagents` | off | runs the built-in Explore subagent on Haiku through a project agent file (`.claude/agents/explore.md`): cheaper searches that may miss on hard ones; general-purpose and Plan stay on the main model |
 
 The same switches live in `.tacet/config.yaml`, with `audit_every` for the number of sessions between quiet re-audits and `budget` for the budget thresholds.
 

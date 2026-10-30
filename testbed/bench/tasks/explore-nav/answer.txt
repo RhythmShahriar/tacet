@@ -1,0 +1,8 @@
+The 16 http.matchers.* modules:
+- http.matchers.vars and http.matchers.vars_regexp: modules/caddyhttp/vars.go
+- http.matchers.expression: modules/caddyhttp/celmatcher.go
+- http.matchers.remote_ip and http.matchers.client_ip: modules/caddyhttp/ip_matchers.go
+- http.matchers.file: modules/caddyhttp/fileserver/matcher.go
+- http.matchers.host, http.matchers.path, http.matchers.path_regexp, http.matchers.method,
+  http.matchers.query, http.matchers.header, http.matchers.header_regexp,
+  http.matchers.protocol, http.matchers.tls, http.matchers.not: modules/caddyhttp/matchers.go

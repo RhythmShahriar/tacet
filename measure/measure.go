@@ -183,6 +183,9 @@ type Usage struct {
 	SubRequests  int            `json:"subagent_requests"`
 	SubTokens    int            `json:"subagent_tokens"`
 	FirstRequest int            `json:"first_request"` // average context of a session's first request
+	// Explore subagents alone: their tokens and the tokens per model.
+	ExploreTokens int            `json:"explore_tokens,omitempty"`
+	ExploreModels map[string]int `json:"explore_models,omitempty"`
 
 	// The main sessions alone, without subagents. Subagents start small
 	// and fresh, so mixing them in skews any before and after comparison.
@@ -289,6 +292,9 @@ func readSessions(paths []string) []*claude.Session {
 			for i := range next {
 				if s, err := claude.ReadSession(jobs[i].path); err == nil && len(s.Turns) > 0 {
 					s.Subagent = jobs[i].sub
+					if s.Subagent {
+						s.AgentType = claude.SubagentType(jobs[i].path)
+					}
 					sessions[i] = s
 				}
 			}
@@ -339,6 +345,13 @@ func SumRange(sessions []*claude.Session, since, until time.Time) *Usage {
 			if s.Subagent {
 				u.SubRequests++
 				u.SubTokens += t.Usage.Total()
+				if strings.EqualFold(s.AgentType, "Explore") {
+					u.ExploreTokens += t.Usage.Total()
+					if u.ExploreModels == nil {
+						u.ExploreModels = map[string]int{}
+					}
+					u.ExploreModels[t.Model] += t.Usage.Total()
+				}
 			} else {
 				u.MainRequests++
 				u.MainInput += t.Usage.Input

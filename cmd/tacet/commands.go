@@ -147,6 +147,9 @@ func setFeature(a *app, args []string, on bool) error {
 	if _, ok := styleFeatures[args[0]]; ok {
 		return setStyleFeature(a, args[0], on)
 	}
+	if err := featureFiles(a, root, args[0], on); err != nil {
+		return err
+	}
 	if err := c.Save(root); err != nil {
 		return err
 	}

@@ -125,3 +125,13 @@ func TestMeasureUsageBefore(t *testing.T) {
 		t.Fatalf("per request main %d", u.PerRequestMain())
 	}
 }
+
+func TestSumCountsExploreByModel(t *testing.T) {
+	main := &claude.Session{ID: "s1", Turns: []claude.Turn{turn(0, 0, 1_000)}}
+	explore := &claude.Session{ID: "a1", Subagent: true, AgentType: "Explore", Turns: []claude.Turn{turn(0, 5_000, 0)}}
+	general := &claude.Session{ID: "a2", Subagent: true, AgentType: "general-purpose", Turns: []claude.Turn{turn(0, 7_000, 0)}}
+	u := Sum([]*claude.Session{main, explore, general}, time.Time{})
+	if u.ExploreTokens != 5_010 || u.ExploreModels["m"] != 5_010 || u.SubTokens != 12_020 {
+		t.Fatalf("explore %d models %v sub %d", u.ExploreTokens, u.ExploreModels, u.SubTokens)
+	}
+}

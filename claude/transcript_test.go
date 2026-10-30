@@ -4,6 +4,8 @@
 package claude
 
 import (
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -83,5 +85,19 @@ func TestToolResults(t *testing.T) {
 	}
 	if u.Results["t1"] != 5 || u.Results["t2"] != 5 || u.Human {
 		t.Errorf("results %v human %v", u.Results, u.Human)
+	}
+}
+
+func TestSubagentType(t *testing.T) {
+	dir := t.TempDir()
+	p := filepath.Join(dir, "agent-a1.jsonl")
+	if SubagentType(p) != "" {
+		t.Fatal("type without a meta file")
+	}
+	if err := os.WriteFile(filepath.Join(dir, "agent-a1.meta.json"), []byte(`{"agentType":"Explore","finished":true}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if got := SubagentType(p); got != "Explore" {
+		t.Fatalf("got %q", got)
 	}
 }
