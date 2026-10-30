@@ -194,6 +194,8 @@ Every command takes `--json` for machine output, `-y` to skip prompts and `-C <d
 | `skills` | on | suggests skills from repeated instructions |
 | `bigoutput` | off | experimental: keeps long Bash and WebFetch output in `.tacet/out` and shows the agent the start, the end and the errors |
 | `feedback` | off | runs the project's own linter or type checker (ruff, pyright, cargo check, tsc, go vet) on each edited file and shows the agent only the failures |
+| `terse` | off | selects the `tacet:terse` output style: results first, no preamble or recap, no file contents repeated back, every fact and path kept |
+| `lesscode` | off | selects the `tacet:lesscode` output style: `terse` plus the smallest change that works and no speculative abstractions |
 | `testgate` | off | runs the tests when the agent tries to finish after editing code and sends it back on failures, at most twice a session |
 
 The same switches live in `.tacet/config.yaml`, with `audit_every` for the number of sessions between quiet re-audits.

@@ -28,6 +28,8 @@ var Features = map[string]bool{
 	"testgate": false, // failing tests keep the agent from finishing
 
 	"bigoutput": false, // experimental: keep long Bash and WebFetch output in .tacet/out
+	"terse":     false, // output style tacet:terse, results first with no preamble or recap
+	"lesscode":  false, // output style tacet:lesscode, terse plus the smallest change that works
 }
 
 // FeatureNames lists the features in a stable order.
@@ -51,6 +53,9 @@ type Config struct {
 func Dir(root string) string { return filepath.Join(root, ".tacet") }
 
 func path(root string) string { return filepath.Join(Dir(root), "config.yaml") }
+
+// Path is the config file, for edits that go through tacet undo.
+func Path(root string) string { return path(root) }
 
 // Load reads the config, filling defaults for anything unset. Features
 // tacet no longer has (speak, trim, outline) are dropped, so an old
@@ -87,12 +92,21 @@ func (c *Config) Save(root string) error {
 	if err := os.MkdirAll(Dir(root), 0o750); err != nil {
 		return err
 	}
-	b, err := yaml.Marshal(c)
+	b, err := c.Marshal()
 	if err != nil {
 		return err
 	}
+	return os.WriteFile(path(root), b, 0o600)
+}
+
+// Marshal is the config file's content.
+func (c *Config) Marshal() ([]byte, error) {
+	b, err := yaml.Marshal(c)
+	if err != nil {
+		return nil, err
+	}
 	head := "# tacet settings for this project. tacet on|off <feature> edits this file.\n"
-	return os.WriteFile(path(root), append([]byte(head), b...), 0o600)
+	return append([]byte(head), b...), nil
 }
 
 // Initialized reports whether tacet init ran here.
