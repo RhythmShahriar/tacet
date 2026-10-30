@@ -39,6 +39,52 @@ checksum:
 release:
   prerelease: auto
 
+# Homebrew cask and Scoop manifest, pushed to their own repositories with
+# TAP_GITHUB_TOKEN. Without the token (a fork, a local snapshot) GoReleaser
+# still writes both files under dist/ but skips the push.
+homebrew_casks:
+  - name: tacet
+    binaries: [tacet]
+    repository:
+      owner: RhythmShahriar
+      name: homebrew-tap
+      token: "{{ .Env.TAP_GITHUB_TOKEN }}"
+    directory: Casks
+    homepage: https://github.com/RhythmShahriar/tacet
+    description: Makes Claude Code use fewer tokens on any project
+    license: MIT
+    commit_author:
+      name: Rhythm Shahriar
+      email: me@rhy.io
+    commit_msg_template: "tacet {{ .Tag }}"
+    skip_upload: '{{ if not (index .Env "TAP_GITHUB_TOKEN") }}true{{ end }}'
+    caveats: |
+      Run tacet init in a project to measure it and install the Claude Code plugin.
+    # The binary is signed through Sigstore, not notarized by Apple, so
+    # Gatekeeper would block it on first run.
+    hooks:
+      post:
+        install: |
+          if OS.mac?
+            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/tacet"]
+          end
+
+scoops:
+  - name: tacet
+    repository:
+      owner: RhythmShahriar
+      name: scoop-bucket
+      token: "{{ .Env.TAP_GITHUB_TOKEN }}"
+    directory: bucket
+    homepage: https://github.com/RhythmShahriar/tacet
+    description: Makes Claude Code use fewer tokens on any project
+    license: MIT
+    commit_author:
+      name: Rhythm Shahriar
+      email: me@rhy.io
+    commit_msg_template: "tacet {{ .Tag }}"
+    skip_upload: '{{ if not (index .Env "TAP_GITHUB_TOKEN") }}true{{ end }}'
+
 # Keyless Sigstore signature over checksums.txt. Verify with
 # scripts/verify-release.sh, which runs:
 #   cosign verify-blob --bundle checksums.txt.sigstore.json \
