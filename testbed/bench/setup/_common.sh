@@ -13,7 +13,7 @@ BENCH=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 STATE_ROOT=${BENCH_STATE:-$BENCH/state}
 CACHE=${BENCH_CACHE:-$BENCH/cache}
 REAL_HOME=${BENCH_REAL_HOME:-$HOME}
-MODES="none tacet tacet-all rtk caveman context-mode claude-mem graphify serena"
+MODES="none tacet tacet-all tacet-terse concise rtk caveman context-mode claude-mem graphify serena"
 
 # state/ and cache/ hold downloaded Go modules and clones. A go.mod at
 # their top makes them modules of their own, so tacet's go ./... (lint,
