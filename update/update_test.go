@@ -484,6 +484,9 @@ func TestDetectPackageManagers(t *testing.T) {
 		{`C:/Users/me/scoop/apps/tacet/current/tacet.exe`, "scoop", ScoopCmd},
 		{`C:/ProgramData/scoop/apps/tacet/current/tacet.exe`, "scoop", ScoopCmd},
 		// npm global installs, Node from anywhere, Homebrew and Scoop too.
+		{"/home/me/.cache/tacet/npm/tacet", "npm", NpmGlobal},
+		{"/Users/me/Library/Caches/tacet/npm/tacet", "npm", NpmGlobal},
+		{`C:\Users\me\AppData\Local\tacet\npm\tacet.exe`, "npm", NpmGlobal},
 		{"/usr/local/lib/node_modules/@rhythmsh/tacet-darwin-arm64/bin/tacet", "npm", NpmGlobal},
 		{"/home/me/.nvm/versions/node/v24.15.0/lib/node_modules/@rhythmsh/tacet-linux-x64/bin/tacet", "npm", NpmGlobal},
 		{"/opt/homebrew/lib/node_modules/@rhythmsh/tacet-darwin-arm64/bin/tacet", "npm", NpmGlobal},

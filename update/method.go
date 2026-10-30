@@ -36,9 +36,13 @@ func Detect(exe string, env func(string) string, home string) Method {
 	lp := strings.ToLower(p)
 	dir := filepath.Dir(filepath.Clean(exe))
 	switch {
-	// First: npm's own folder can sit under Homebrew or Scoop when Node
-	// came from them (/opt/homebrew/lib/node_modules/...).
-	case strings.Contains(lp, "/node_modules/@rhythmsh/tacet-"):
+	// First: the npm package keeps the binary it downloads in the user
+	// cache (~/.cache/tacet/npm/tacet, ~/Library/Caches/tacet/npm/tacet,
+	// %LOCALAPPDATA%\tacet\npm\tacet.exe). Versions before 1.2.1 ran it
+	// from a platform package, which can sit under Homebrew or Scoop when
+	// Node came from them (/opt/homebrew/lib/node_modules/...).
+	case strings.HasSuffix(lp, "/tacet/npm/tacet") || strings.HasSuffix(lp, "/tacet/npm/tacet.exe"),
+		strings.Contains(lp, "/node_modules/@rhythmsh/tacet-"):
 		return Method{"npm", NpmGlobal}
 	// tacet ships as a cask, staged under Caskroom; a formula someone else
 	// maintains lives under Cellar.
