@@ -14,7 +14,7 @@ files=$(git ls-files 2>/dev/null || find . -type f -not -path './.git/*')
 for f in $files; do
 	case $f in
 	testbed/fixtures/*) continue ;;
-	*.go | *.yml | *.yaml | *.sh | *.ps1 | .githooks/*) ;;
+	*.go | *.yml | *.yaml | *.sh | *.ps1 | *.js | .githooks/*) ;;
 	*) continue ;;
 	esac
 	top=$(head -n 5 "$f")

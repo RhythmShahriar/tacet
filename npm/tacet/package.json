@@ -1,0 +1,39 @@
+{
+  "name": "@rhythmsh/tacet",
+  "version": "0.0.0",
+  "description": "Makes Claude Code use fewer tokens on any project",
+  "keywords": [
+    "claude-code",
+    "tokens",
+    "mcp",
+    "cli"
+  ],
+  "homepage": "https://github.com/RhythmShahriar/tacet#readme",
+  "bugs": "https://github.com/RhythmShahriar/tacet/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RhythmShahriar/tacet.git",
+    "directory": "npm/tacet"
+  },
+  "license": "MIT",
+  "author": "Rhythm Shahriar <me@rhy.io>",
+  "bin": {
+    "tacet": "bin/tacet.js"
+  },
+  "files": [
+    "bin/tacet.js",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "optionalDependencies": {
+    "@rhythmsh/tacet-darwin-arm64": "0.0.0",
+    "@rhythmsh/tacet-darwin-x64": "0.0.0",
+    "@rhythmsh/tacet-linux-arm64": "0.0.0",
+    "@rhythmsh/tacet-linux-x64": "0.0.0",
+    "@rhythmsh/tacet-win32-arm64": "0.0.0",
+    "@rhythmsh/tacet-win32-x64": "0.0.0"
+  }
+}
