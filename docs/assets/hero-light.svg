@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="310" viewBox="0 0 880 310" role="img" aria-labelledby="t d">
+<title id="t">tacet</title><desc id="d">tacet makes Claude Code use fewer tokens: 38% cheaper than Claude Code alone, 27 of 27 answers correct, one command to set up.</desc>
+<rect width="880" height="310" rx="18" fill="#FFFFFF"/>
+<rect x=".5" y=".5" width="879" height="309" rx="18" fill="none" stroke="#E8E6E1"/>
+<circle cx="68" cy="76" r="9" fill="#E8603A"/>
+<text x="88" y="92" font-family='ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif' font-size="46" font-weight="800" letter-spacing="-1.5" fill="#100F0D">tacet</text>
+<text x="60" y="138" font-family='ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif' font-size="22" font-weight="600" fill="#100F0D">Why is Claude Code reading all that?</text>
+<text x="60" y="168" font-family='ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif' font-size="16" fill="#6B6863">One command makes Claude Code use fewer tokens on any project. Every saving measured.</text>
+<rect x="60" y="196" width="240" height="78" rx="12" fill="#FFF3EE"/>
+<text x="80" y="234" font-family='ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif' font-size="30" font-weight="800" fill="#E8603A">-38%</text>
+<text x="80" y="258" font-family='ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif' font-size="14" fill="#100F0D">cost vs Claude Code alone</text>
+<rect x="320" y="196" width="240" height="78" rx="12" fill="#FFF3EE"/>
+<text x="340" y="234" font-family='ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif' font-size="30" font-weight="800" fill="#E8603A">27/27</text>
+<text x="340" y="258" font-family='ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif' font-size="14" fill="#100F0D">answers correct</text>
+<rect x="580" y="196" width="240" height="78" rx="12" fill="#FFF3EE"/>
+<text x="600" y="234" font-family='ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif' font-size="30" font-weight="800" fill="#E8603A">1</text>
+<text x="600" y="258" font-family='ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif' font-size="14" fill="#100F0D">command to set up</text>
+</svg>

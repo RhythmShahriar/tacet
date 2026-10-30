@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="370" viewBox="0 0 880 370" role="img" aria-labelledby="t d">
+<title id="t">Cost per run against Claude Code alone</title>
+<desc id="d">Nine tasks, three runs each, every answer checked. tacet -38%, rtk -9%, serena -4%, claude-mem 0%, caveman +4%, context-mode +4%, graphify +13%.</desc>
+<rect width="880" height="370" rx="18" fill="#100F0D"/>
+<rect x=".5" y=".5" width="879" height="369" rx="18" fill="none" stroke="#2A2824"/>
+<text x="40" y="48" font-family='ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif' font-size="18" font-weight="700" fill="#FFFFFF">Cost per run against Claude Code alone</text>
+<text x="40" y="72" font-family='ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif' font-size="13" fill="#A8A49C">9 tasks, 3 runs each on Claude Haiku, every answer checked. Lower is better.</text>
+<line x1="630" y1="96" x2="630" y2="326" stroke="#2A2824" stroke-width="2"/>
+<text x="630" y="348" text-anchor="middle" font-family='ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif' font-size="12" fill="#A8A49C">Claude Code alone</text>
+<text x="40" y="126" font-family='ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif' font-size="15" font-weight="800" fill="#FFFFFF">tacet</text>
+<rect x="250" y="111" width="380" height="22" rx="5" fill="#FF7C52"/>
+<text x="240" y="127" text-anchor="end" font-family='ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace' font-size="14" font-weight="800" fill="#FF7C52">-38%</text>
+<text x="40" y="159" font-family='ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif' font-size="15" font-weight="500" fill="#FFFFFF">rtk</text>
+<rect x="540" y="144" width="90" height="22" rx="5" fill="#3A3833"/>
+<text x="530" y="160" text-anchor="end" font-family='ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace' font-size="14" font-weight="500" fill="#A8A49C">-9%</text>
+<text x="40" y="192" font-family='ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif' font-size="15" font-weight="500" fill="#FFFFFF">serena</text>
+<rect x="590" y="177" width="40" height="22" rx="5" fill="#3A3833"/>
+<text x="580" y="193" text-anchor="end" font-family='ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace' font-size="14" font-weight="500" fill="#A8A49C">-4%</text>
+<text x="40" y="225" font-family='ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif' font-size="15" font-weight="500" fill="#FFFFFF">claude-mem</text>
+<rect x="628.5" y="210" width="3" height="22" rx="5" fill="#3A3833"/>
+<text x="641.5" y="226" text-anchor="start" font-family='ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace' font-size="14" font-weight="500" fill="#A8A49C">0%</text>
+<text x="40" y="258" font-family='ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif' font-size="15" font-weight="500" fill="#FFFFFF">caveman</text>
+<rect x="630" y="243" width="40" height="22" rx="5" fill="#3A3833"/>
+<text x="680" y="259" text-anchor="start" font-family='ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace' font-size="14" font-weight="500" fill="#A8A49C">+4%</text>
+<text x="40" y="291" font-family='ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif' font-size="15" font-weight="500" fill="#FFFFFF">context-mode</text>
+<rect x="630" y="276" width="40" height="22" rx="5" fill="#3A3833"/>
+<text x="680" y="292" text-anchor="start" font-family='ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace' font-size="14" font-weight="500" fill="#A8A49C">+4%</text>
+<text x="40" y="324" font-family='ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif' font-size="15" font-weight="500" fill="#FFFFFF">graphify</text>
+<rect x="630" y="309" width="130" height="22" rx="5" fill="#3A3833"/>
+<text x="770" y="325" text-anchor="start" font-family='ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace' font-size="14" font-weight="500" fill="#A8A49C">+13%</text>
+</svg>
