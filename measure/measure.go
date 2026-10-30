@@ -261,6 +261,10 @@ func MeasureUsageBefore(root string, until time.Time, limit int) *Usage {
 	return SumRange(readSessions(append(before, after...)), time.Time{}, until)
 }
 
+// ReadSessions parses session transcripts and their subagents, for
+// views that need each request rather than the sums.
+func ReadSessions(paths []string) []*claude.Session { return readSessions(paths) }
+
 // readSessions parses session transcripts and their subagents.
 func readSessions(paths []string) []*claude.Session {
 	type job struct {
