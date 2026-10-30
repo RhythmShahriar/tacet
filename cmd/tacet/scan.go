@@ -43,6 +43,7 @@ func doScan(root string, since time.Time) (*scan, error) {
 	s.Docs = lint.Check(set)
 	s.Audit = audit.Run(audit.Input{Root: root, Startup: st, Usage: u})
 	s.Audit = append(s.Audit, skills.Suggest(root, set, s.Docs, config.Load(root).On("skills"))...)
+	s.Audit = append(s.Audit, statuslineFinding()...)
 	core.Rank(s.Audit)
 	return s, nil
 }

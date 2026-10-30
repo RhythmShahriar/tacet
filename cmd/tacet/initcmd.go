@@ -135,6 +135,11 @@ func runInit(a *app, args []string) error {
 	if len(sug) > 0 {
 		fmt.Fprintf(w, "%s %d suggestion(s) need a yes from you: type /tacet in Claude Code.\n", ui.Brand.Render("•"), len(sug))
 	}
+	for _, f := range sug {
+		if f.Fix.ID == "statusline" {
+			fmt.Fprintf(w, "%s Optional: %s shows tokens saved in Claude Code's statusline (terminal only).\n", ui.Brand.Render("•"), ui.Label.Render("tacet statusline --install"))
+		}
+	}
 	fmt.Fprintln(w)
 	fmt.Fprintln(w, "Done. tacet now works on its own. Restart Claude Code to load the plugin; type /tacet anytime.")
 	return nil

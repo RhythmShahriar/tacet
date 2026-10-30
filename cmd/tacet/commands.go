@@ -112,7 +112,7 @@ func runCheck(a *app, args []string) error {
 	// CI has no transcripts or user config; judge only what is in the repo.
 	var fs []core.Finding
 	for _, f := range s.all() {
-		if strings.HasPrefix(f.Rule, "cache/") || f.Rule == "git/attribution" || strings.HasSuffix(f.Rule, "/unused") {
+		if strings.HasPrefix(f.Rule, "cache/") || f.Rule == "git/attribution" || strings.HasSuffix(f.Rule, "/unused") || strings.HasPrefix(f.Rule, "statusline/") {
 			continue
 		}
 		fs = append(fs, f)
