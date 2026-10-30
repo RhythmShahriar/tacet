@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/RhythmShahriar/tacet/core"
@@ -96,10 +97,12 @@ func runInit(a *app, args []string) error {
 	}
 
 	pluginErr := error(nil)
+	npx := false
 	if !noPlugin {
 		bin, err := os.Executable()
 		if err == nil {
 			bin, _ = filepath.EvalSymlinks(bin)
+			npx = inNpxCache(bin)
 			pluginErr = plugin.Install(bin, version)
 		} else {
 			pluginErr = err
@@ -110,6 +113,7 @@ func runInit(a *app, args []string) error {
 		return a.writeJSON(map[string]any{
 			"root": root, "startup_tokens": s.Startup.Total, "applied": applied,
 			"suggestions": len(sug), "plugin_error": errString(pluginErr), "saved_estimate": saved,
+			"npx_warning": npx,
 		})
 	}
 	if len(applied) > 0 {
@@ -125,12 +129,30 @@ func runInit(a *app, args []string) error {
 	default:
 		fmt.Fprintf(w, "%s Plugin installed: hooks now run on their own in this project.\n", ui.Good.Render("✓"))
 	}
+	if npx {
+		fmt.Fprintln(w, ui.Bad.Render("!")+" "+npxWarning)
+	}
 	if len(sug) > 0 {
 		fmt.Fprintf(w, "%s %d suggestion(s) need a yes from you: type /tacet in Claude Code.\n", ui.Brand.Render("•"), len(sug))
 	}
 	fmt.Fprintln(w)
 	fmt.Fprintln(w, "Done. tacet now works on its own. Restart Claude Code to load the plugin; type /tacet anytime.")
 	return nil
+}
+
+// npxWarning tells an npx user the hooks point at a copy npm may delete.
+const npxWarning = "tacet is running from npx's temporary cache, so the hooks stop working once npm clears it. " +
+	"Install it globally so the hooks keep working: npm i -g @rhythmsh/tacet, then run tacet init again."
+
+// inNpxCache reports whether bin sits in npx's cache (~/.npm/_npx/<hash>),
+// which npm may clear at any time.
+func inNpxCache(bin string) bool {
+	for _, part := range strings.Split(filepath.ToSlash(bin), "/") {
+		if part == "_npx" {
+			return true
+		}
+	}
+	return false
 }
 
 func errString(err error) string {
