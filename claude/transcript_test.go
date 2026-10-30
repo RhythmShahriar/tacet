@@ -4,6 +4,8 @@
 package claude
 
 import (
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -63,5 +65,19 @@ func FuzzParseSession(f *testing.F) {
 func TestEncodeDir(t *testing.T) {
 	if got := EncodeDir("/home/me/ws/uplytics.ai"); got != "-home-me-ws-uplytics-ai" {
 		t.Fatal(got)
+	}
+}
+
+func TestSubagentType(t *testing.T) {
+	dir := t.TempDir()
+	p := filepath.Join(dir, "agent-a1.jsonl")
+	if SubagentType(p) != "" {
+		t.Fatal("type without a meta file")
+	}
+	if err := os.WriteFile(filepath.Join(dir, "agent-a1.meta.json"), []byte(`{"agentType":"Explore","finished":true}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if got := SubagentType(p); got != "Explore" {
+		t.Fatalf("got %q", got)
 	}
 }

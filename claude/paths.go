@@ -6,6 +6,7 @@
 package claude
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
@@ -68,6 +69,22 @@ func Subagents(sessionPath string) []string {
 		return nil
 	})
 	return out
+}
+
+// SubagentType reads the agentType Claude Code records in the
+// .meta.json beside a subagent transcript; "" when there is none.
+func SubagentType(transcript string) string {
+	b, err := os.ReadFile(strings.TrimSuffix(transcript, ".jsonl") + ".meta.json") // #nosec G304 -- beside a transcript tacet listed
+	if err != nil {
+		return ""
+	}
+	var m struct {
+		AgentType string `json:"agentType"`
+	}
+	if json.Unmarshal(b, &m) != nil {
+		return ""
+	}
+	return m.AgentType
 }
 
 func sortByMtime(paths []string) {

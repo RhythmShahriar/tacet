@@ -43,6 +43,9 @@ type Session struct {
 	Path     string
 	Turns    []Turn
 	Subagent bool // a subagent's transcript, billed but not a session of its own
+	// AgentType is a subagent's type (Explore, Plan, general-purpose)
+	// from the .meta.json Claude Code writes next to its transcript.
+	AgentType string
 }
 
 type rawLine struct {
