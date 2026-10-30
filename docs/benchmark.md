@@ -90,6 +90,14 @@ Repeat it: `testbed/bench/all.sh 3`, then `testbed/bench/table.sh`. Setup, pinne
   suggestion, never applied on its own.
 - A first comparison looked good because the run without tacet skipped
   pages. Questions now ask for facts spread over the whole document.
+- Claude Code already skips resending a file it has read in the same
+  session, so tacet does not add its own read dedup. On 2.1.92 a second
+  Read of the same path with the same offset and limit and an unchanged
+  mtime returns a 154-character `file_unchanged` notice in place of the
+  10,420-character content. Two Reads sent in one message both return the
+  full file since neither has finished yet. A resumed session starts with
+  no read state, so its first Read is full again. The docs do not mention
+  this yet.
 
 ## Repeat it
 
