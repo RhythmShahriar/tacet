@@ -81,15 +81,15 @@ Once `tacet init` has run, the plugin's hooks do this without being asked:
 
 | Tool | Cost per run | Tokens | Correct |
 |---|---|---|---|
-| **tacet** | **-32%** | **-34%** | 27/27 |
-| rtk | -16% | -19% | 27/27 |
-| serena | -4% | -4% | 27/27 |
-| caveman | +2% | -1% | 26/27 |
-| claude-mem | +2% | +5% | 26/26 |
-| context-mode | +4% | +18% | 27/27 |
-| graphify | +10% | +6% | 27/27 |
+| **tacet** | **-38%** | **-41%** | 27/27 |
+| rtk | -9% | -8% | 27/27 |
+| serena | -4% | -2% | 27/27 |
+| claude-mem | 0% | +2% | 26/26 |
+| caveman | +4% | -1% | 26/27 |
+| context-mode | +4% | +14% | 27/27 |
+| graphify | +13% | +9% | 27/27 |
 
-Compared with Claude Code and no tool. tacet is cheapest on documents, code navigation and continuing work; rtk is cheapest on fixing a failing Python test. Per-task numbers, method and how to rerun it: [docs/benchmark.md](docs/benchmark.md#against-other-tools).
+Compared with Claude Code and no tool. tacet is cheapest on seven of the nine tasks; rtk is cheaper on continuing a half-done change and serena on fixing a failing Rust test. Per-task numbers, method and how to rerun it: [docs/benchmark.md](docs/benchmark.md#against-other-tools).
 
 **Per feature.**
 
