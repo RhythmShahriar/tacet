@@ -1,12 +1,22 @@
 {
   "name": "@rhythmsh/tacet",
   "version": "0.0.0",
-  "description": "Makes Claude Code use fewer tokens on any project",
+  "description": "One command makes Claude Code use fewer tokens on any project: 38% cheaper than Claude Code alone, every saving measured.",
   "keywords": [
     "claude-code",
+    "claude",
+    "anthropic",
     "tokens",
+    "context",
+    "cost",
+    "llm",
+    "ai",
     "mcp",
-    "cli"
+    "hooks",
+    "plugin",
+    "pdf",
+    "cli",
+    "developer-tools"
   ],
   "homepage": "https://github.com/RhythmShahriar/tacet#readme",
   "bugs": "https://github.com/RhythmShahriar/tacet/issues",
