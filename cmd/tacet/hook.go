@@ -114,7 +114,7 @@ func handle(root string, cfg *config.Config, event string, in *hookInput) (any, 
 	case "post-output":
 		return postOutput(root, cfg, in), nil
 	case "prompt":
-		return promptDocs(root, cfg, in), nil
+		return withBudget(promptDocs(root, cfg, in), root, cfg, in), nil
 	case "pre-compact":
 		return nil, preCompact(root, cfg, in)
 	case "session-end":
