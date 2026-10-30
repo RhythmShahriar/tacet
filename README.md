@@ -171,6 +171,7 @@ Most people only run `tacet init`. For a look or a change:
 | `tacet audit` | setup findings, each with a fix |
 | `tacet docs lint` | checks `CLAUDE.md`, `AGENTS.md` and rules files (`fix`, `init` and `sync` change them) |
 | `tacet skills new "<what>"` | drafts a skill from a description (or the latest session with `--from-session`) and writes it after a yes |
+| `tacet skills add <owner/repo/path[@ref]>` | imports a public skill pinned to a commit after a yes; never overwrites, refuses scripts unless `--allow-scripts` (`--list` shows examples) |
 | `tacet skills check` | skills that never trigger, run long or overlap, with the startup tokens each fix saves |
 | `tacet on <feature>` / `tacet off <feature>` | turns a feature on or off for this project |
 | `tacet undo` | reverts tacet's last change |

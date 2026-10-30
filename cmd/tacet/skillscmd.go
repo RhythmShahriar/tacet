@@ -18,7 +18,7 @@ import (
 	"github.com/RhythmShahriar/tacet/skills"
 )
 
-const skillsUsage = `tacet skills [new "<description>" | new --from-session [--transcript <path>] | check]`
+const skillsUsage = `tacet skills [new "<description>" | new --from-session [--transcript <path>] | check | add <source> [--allow-scripts] | add --list]`
 
 // runSkills lists the repeated requests tacet would turn into skills,
 // drafts one on demand or checks the skills already there.
@@ -29,6 +29,8 @@ func runSkills(a *app, args []string) error {
 			return runSkillsNew(a, args[1:])
 		case "check":
 			return runSkillsCheck(a, args[1:])
+		case "add":
+			return runSkillsAdd(a, args[1:])
 		}
 		return fmt.Errorf("%w: %s", errUsage, skillsUsage)
 	}
