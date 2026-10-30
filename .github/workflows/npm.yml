@@ -1,0 +1,100 @@
+# Copyright (c) 2026 Rhythm Shahriar <me@rhy.io>
+# SPDX-License-Identifier: MIT
+
+# Publishes tacet to npm after a release: six platform packages
+# @rhythmsh/tacet-<platform>-<arch>, each holding one binary, then the
+# @rhythmsh/tacet launcher that picks the right one. The binaries come from
+# the release itself, after its checksums.txt verifies against the release
+# workflow's attestation and every archive against checksums.txt.
+#
+# It uses the NPM_TOKEN repository secret (an npm granular token with write
+# access) when there is one. Without it, npm publishes through Trusted
+# Publishing (OIDC, npm 11.5.1 or later), once each of the seven packages is
+# linked to this workflow on npmjs.com; then delete the secret.
+#
+# A release GoReleaser publishes with GITHUB_TOKEN fires no release event in
+# other workflows, so the release workflow finishing starts this one too.
+# Both may run for one tag; the concurrency group and the skip for versions
+# already on npm make that safe.
+name: npm
+on:
+  workflow_run:
+    workflows: [release]
+    types: [completed]
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to publish, such as v1.2.0.
+        required: true
+        type: string
+permissions:
+  contents: read
+  id-token: write   # npm provenance and Trusted Publishing
+  attestations: read  # gh attestation verify
+env:
+  TAG: ${{ github.event.workflow_run.head_branch || github.event.release.tag_name || inputs.tag }}
+  # No package script runs in the job that can publish.
+  NPM_CONFIG_IGNORE_SCRIPTS: "true"
+concurrency:
+  group: npm-${{ github.event.workflow_run.head_branch || github.event.release.tag_name || inputs.tag }}
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && startsWith(github.event.workflow_run.head_branch, 'v'))
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check the tag
+        run: printf '%s' "$TAG" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$'
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.TAG }}
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      - name: Download the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --dir release \
+            --pattern checksums.txt --pattern 'tacet_*.tar.gz' --pattern 'tacet_*.zip'
+      # --source-ref: a snapshot dry run from a branch is attested by the
+      # same workflow, so only a file built from this tag may pass.
+      - name: Verify the attestation
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh attestation verify release/checksums.txt --repo RhythmShahriar/tacet \
+            --signer-workflow RhythmShahriar/.github/.github/workflows/release-go.yml \
+            --source-ref "refs/tags/$TAG" --deny-self-hosted-runners
+      - name: Build the packages
+        run: scripts/npm-pack.sh "$TAG" release npm/out
+      - name: Publish
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          version=${TAG#v}
+          tag=latest
+          case "$TAG" in *-*) tag=next ;; esac   # v1.2.0-rc1 → next, never latest
+          # setup-node points .npmrc at NODE_AUTH_TOKEN. Set it only from a
+          # real secret: an empty or placeholder token would stop npm from
+          # falling back to Trusted Publishing.
+          if [ -n "$NPM_TOKEN" ]; then
+            export NODE_AUTH_TOKEN=$NPM_TOKEN
+          else
+            unset NODE_AUTH_TOKEN
+            echo "No NPM_TOKEN secret: publishing with Trusted Publishing."
+          fi
+          # Platform packages first, so the launcher never points at a
+          # version that isn't there. A rerun skips what is already out.
+          for dir in npm/out/tacet-*/ npm/out/tacet/; do
+            name=$(node -p "require('./${dir}package.json').name")
+            if npm view "$name@$version" version >/dev/null 2>&1; then
+              echo "$name@$version is already published"
+              continue
+            fi
+            (cd "$dir" && npm publish --provenance --access public --tag "$tag")
+          done

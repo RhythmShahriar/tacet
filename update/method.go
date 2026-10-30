@@ -9,12 +9,19 @@ import (
 	"strings"
 )
 
+// Commands that update tacet for the package managers it ships through.
+const (
+	BrewCask  = "brew upgrade --cask tacet"
+	ScoopCmd  = "scoop update tacet"
+	NpmGlobal = "npm i -g @rhythmsh/tacet@latest"
+)
+
 // GoInstall is how a go install user updates.
 const GoInstall = "go install -tags gotreesitter_no_copyleft github.com/" + Repo + "/cmd/tacet@latest"
 
 // Method is how this tacet binary was installed.
 type Method struct {
-	Name    string // release, go, brew, scoop, winget, nix, package
+	Name    string // release, go, npm, brew, scoop, winget, nix, package
 	Command string // what to run instead of tacet update; empty for release
 }
 
@@ -29,10 +36,18 @@ func Detect(exe string, env func(string) string, home string) Method {
 	lp := strings.ToLower(p)
 	dir := filepath.Dir(filepath.Clean(exe))
 	switch {
-	case strings.Contains(lp, "/cellar/") || strings.Contains(lp, "/homebrew/") || strings.Contains(lp, "/linuxbrew/"):
+	// First: npm's own folder can sit under Homebrew or Scoop when Node
+	// came from them (/opt/homebrew/lib/node_modules/...).
+	case strings.Contains(lp, "/node_modules/@rhythmsh/tacet-"):
+		return Method{"npm", NpmGlobal}
+	// tacet ships as a cask, staged under Caskroom; a formula someone else
+	// maintains lives under Cellar.
+	case strings.Contains(lp, "/cellar/"):
 		return Method{"brew", "brew upgrade tacet"}
+	case strings.Contains(lp, "/caskroom/") || strings.Contains(lp, "/homebrew/") || strings.Contains(lp, "/linuxbrew/"):
+		return Method{"brew", BrewCask}
 	case strings.Contains(lp, "/scoop/"):
-		return Method{"scoop", "scoop update tacet"}
+		return Method{"scoop", ScoopCmd}
 	case strings.Contains(lp, "/winget/"):
 		return Method{"winget", "winget upgrade tacet"}
 	case strings.HasPrefix(lp, "/nix/store/"):

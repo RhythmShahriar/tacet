@@ -44,7 +44,12 @@ Both scripts download the build for your system from the latest release, check i
 
 | With | Run |
 |---|---|
+| Homebrew (macOS, Linux) | `brew install rhythmshahriar/tap/tacet` |
+| Scoop (Windows) | `scoop bucket add rhythmshahriar https://github.com/RhythmShahriar/scoop-bucket` then `scoop install tacet` |
+| npm | `npm i -g @rhythmsh/tacet` |
 | Go | `go install -tags gotreesitter_no_copyleft github.com/RhythmShahriar/tacet/cmd/tacet@latest` |
+
+Install it for good rather than through `npx`: `tacet init` points Claude Code's hooks at the binary it ran from. npm can clear npx's copy at any time. `tacet update` replaces a binary from the install scripts; for Homebrew, Scoop, npm and Go it prints the command to update with instead.
 
 To check a release archive by hand, run [`scripts/verify-release.sh`](scripts/verify-release.sh) next to the archive, `checksums.txt` and `checksums.txt.sigstore.json`.
 
@@ -181,7 +186,15 @@ In each project where you ran `tacet init`:
 tacet uninstall
 ```
 
-It reverts every change tacet made there, removes the Claude Code plugin and the `/tacet` skill and deletes `.tacet/`. Then remove the binary: delete `tacet` from the folder the install script used.
+It reverts every change tacet made there, removes the Claude Code plugin and the `/tacet` skill and deletes `.tacet/`. Then remove the binary the way you installed it:
+
+| Installed with | Remove with |
+|---|---|
+| Install script | delete `tacet` from the folder it used (`~/.local/bin`, Windows: `%LOCALAPPDATA%\Programs\tacet`) |
+| Homebrew | `brew uninstall --cask tacet` |
+| Scoop | `scoop uninstall tacet` |
+| npm | `npm uninstall -g @rhythmsh/tacet` |
+| Go | delete `tacet` from `$(go env GOPATH)/bin` |
 
 ## Contributing
 

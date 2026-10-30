@@ -1,0 +1,36 @@
+{
+  "name": "@rhythmsh/tacet-@PLATFORM@-@ARCH@",
+  "version": "@VERSION@",
+  "description": "The tacet binary for @PLATFORM@ @ARCH@, installed by @rhythmsh/tacet",
+  "keywords": [
+    "claude-code",
+    "tokens",
+    "mcp",
+    "cli"
+  ],
+  "homepage": "https://github.com/RhythmShahriar/tacet#readme",
+  "bugs": "https://github.com/RhythmShahriar/tacet/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RhythmShahriar/tacet.git",
+    "directory": "npm/platform"
+  },
+  "license": "MIT",
+  "author": "Rhythm Shahriar <me@rhy.io>",
+  "os": [
+    "@PLATFORM@"
+  ],
+  "cpu": [
+    "@ARCH@"
+  ],
+  "files": [
+    "bin/@BINARY@",
+    "THIRD_PARTY",
+    "README.md",
+    "LICENSE"
+  ],
+  "preferUnplugged": true,
+  "engines": {
+    "node": ">=18"
+  }
+}
