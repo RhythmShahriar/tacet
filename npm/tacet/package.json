@@ -27,13 +27,5 @@
   ],
   "engines": {
     "node": ">=18"
-  },
-  "optionalDependencies": {
-    "@rhythmsh/tacet-darwin-arm64": "0.0.0",
-    "@rhythmsh/tacet-darwin-x64": "0.0.0",
-    "@rhythmsh/tacet-linux-arm64": "0.0.0",
-    "@rhythmsh/tacet-linux-x64": "0.0.0",
-    "@rhythmsh/tacet-win32-arm64": "0.0.0",
-    "@rhythmsh/tacet-win32-x64": "0.0.0"
   }
 }

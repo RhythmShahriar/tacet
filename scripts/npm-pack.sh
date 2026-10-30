@@ -6,9 +6,10 @@
 #   scripts/npm-pack.sh <version> <dir> [out]
 # <dir> holds tacet_<os>_<arch>.tar.gz (.zip on Windows) and checksums.txt,
 # as in dist/ after goreleaser or a gh release download. Every archive must
-# match its line in checksums.txt. Writes one folder per package under
-# [out] (default npm/out): six @rhythmsh/tacet-<platform>-<arch> packages
-# and @rhythmsh/tacet, all at <version>.
+# match its line in checksums.txt. Writes the single @rhythmsh/tacet
+# package under [out] (default npm/out/tacet). It holds no binary: its
+# launcher downloads this platform's archive from the release on first
+# run and checks it against the SHA-256 written into package.json here.
 set -eu
 
 die() {
@@ -34,12 +35,10 @@ sha256() {
 	fi
 }
 
-work=$(mktemp -d)
-trap 'rm -rf "$work"' EXIT
-
 rm -rf "$out"
-mkdir -p "$out"
-
+main=$out/tacet
+mkdir -p "$main/bin"
+archives=
 # npm platform and arch, then GoReleaser's names for the same target.
 for t in darwin:arm64:darwin:arm64 darwin:x64:darwin:amd64 \
 	linux:arm64:linux:arm64 linux:x64:linux:amd64 \
@@ -49,48 +48,20 @@ for t in darwin:arm64:darwin:arm64 darwin:x64:darwin:amd64 \
 	END
 	if [ "$goos" = windows ]; then
 		archive=tacet_${goos}_${goarch}.zip
-		binary=tacet.exe
 	else
 		archive=tacet_${goos}_${goarch}.tar.gz
-		binary=tacet
 	fi
 	[ -f "$src/$archive" ] || die "$src/$archive not found"
-
 	want=$(awk -v f="$archive" '$2 == f || $2 == "*" f { print $1 }' "$src/checksums.txt")
 	[ -n "$want" ] || die "$archive has no line in checksums.txt"
 	got=$(sha256 "$src/$archive")
 	[ "$got" = "$want" ] || die "$archive checksum mismatch: got $got, want $want"
-
-	x=$work/$platform-$arch
-	mkdir -p "$x"
-	if [ "$goos" = windows ]; then
-		unzip -q "$src/$archive" -d "$x"
-	else
-		tar -xzf "$src/$archive" -C "$x"
-	fi
-	[ -f "$x/$binary" ] || die "$archive holds no $binary"
-
-	pkg=$out/tacet-$platform-$arch
-	mkdir -p "$pkg/bin"
-	cp "$x/$binary" "$pkg/bin/$binary"
-	chmod 755 "$pkg/bin/$binary"
-	cp "$x/LICENSE" "$pkg/LICENSE"
-	cp -R "$x/THIRD_PARTY" "$pkg/THIRD_PARTY"
-	for f in package.json README.md; do
-		sed -e "s/@PLATFORM@/$platform/g" -e "s/@ARCH@/$arch/g" \
-			-e "s/@VERSION@/$version/g" -e "s/@BINARY@/$binary/g" \
-			"$root/npm/platform/$f" >"$pkg/$f"
-	done
-	echo "npm-pack: @rhythmsh/tacet-$platform-$arch $version"
+	archives="$archives${archives:+,}\"$platform-$arch\":{\"file\":\"$archive\",\"sha256\":\"$got\"}"
 done
-
-main=$out/tacet
-mkdir -p "$main/bin"
 cp "$root/npm/tacet/bin/tacet.js" "$main/bin/tacet.js"
 chmod 755 "$main/bin/tacet.js"
 cp "$root/npm/tacet/README.md" "$main/README.md"
 cp "$root/LICENSE" "$main/LICENSE"
-# The template's own version and every optional dependency are 0.0.0.
-sed "s/\"0\.0\.0\"/\"$version\"/g" "$root/npm/tacet/package.json" >"$main/package.json"
-grep -q '"0\.0\.0"' "$main/package.json" && die "a 0.0.0 version is left in package.json"
+jq --arg v "$version" --argjson a "{$archives}" '.version = $v | .tacet = {archives: $a}' \
+	"$root/npm/tacet/package.json" >"$main/package.json"
 echo "npm-pack: @rhythmsh/tacet $version"

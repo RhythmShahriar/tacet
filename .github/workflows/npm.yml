@@ -1,16 +1,16 @@
 # Copyright (c) 2026 Rhythm Shahriar <me@rhy.io>
 # SPDX-License-Identifier: MIT
 
-# Publishes tacet to npm after a release: six platform packages
-# @rhythmsh/tacet-<platform>-<arch>, each holding one binary, then the
-# @rhythmsh/tacet launcher that picks the right one. The binaries come from
-# the release itself, after its checksums.txt verifies against the release
+# Publishes tacet to npm after a release as one package, @rhythmsh/tacet.
+# It holds no binary: on first run its launcher downloads this platform's
+# archive from the release and checks it against the SHA-256 recorded in
+# package.json here, after checksums.txt verifies against the release
 # workflow's attestation and every archive against checksums.txt.
 #
 # It uses the NPM_TOKEN repository secret (an npm granular token with write
 # access) when there is one. Without it, npm publishes through Trusted
-# Publishing (OIDC, npm 11.5.1 or later), once each of the seven packages is
-# linked to this workflow on npmjs.com; then delete the secret.
+# Publishing (OIDC, npm 11.5.1 or later), once the package is linked to this
+# workflow on npmjs.com; then delete the secret.
 #
 # A release GoReleaser publishes with GITHUB_TOKEN fires no release event in
 # other workflows, so the release workflow finishing starts this one too.
@@ -88,9 +88,8 @@ jobs:
             unset NODE_AUTH_TOKEN
             echo "No NPM_TOKEN secret: publishing with Trusted Publishing."
           fi
-          # Platform packages first, so the launcher never points at a
-          # version that isn't there. A rerun skips what is already out.
-          for dir in npm/out/tacet-*/ npm/out/tacet/; do
+          # A rerun skips a version that is already out.
+          for dir in npm/out/tacet/; do
             name=$(node -p "require('./${dir}package.json').name")
             if npm view "$name@$version" version >/dev/null 2>&1; then
               echo "$name@$version is already published"
@@ -98,3 +97,15 @@ jobs:
             fi
             (cd "$dir" && npm publish --provenance --access public --tag "$tag")
           done
+          # 1.2.0 shipped six platform packages; tacet is one package now.
+          # Mark them and npm's staging placeholder as no longer used.
+          # Runs once: a package that already says so is left alone.
+          for p in darwin-arm64 darwin-x64 linux-arm64 linux-x64 win32-arm64 win32-x64; do
+            name=@rhythmsh/tacet-$p
+            if [ -z "$(npm view "$name" deprecated 2>/dev/null)" ]; then
+              npm deprecate "$name" "No longer used: tacet ships as one package. Install @rhythmsh/tacet." || true
+            fi
+          done
+          if [ -z "$(npm view @rhythmsh/tacet@0.0.0-stage deprecated 2>/dev/null)" ]; then
+            npm deprecate "@rhythmsh/tacet@0.0.0-stage" "Placeholder npm made while publishing; install @rhythmsh/tacet." || true
+          fi
