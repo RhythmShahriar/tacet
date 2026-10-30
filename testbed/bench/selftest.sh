@@ -14,6 +14,18 @@ if [ $# -eq 0 ]; then
 	set -- "${all[@]}"
 fi
 status=0
+# Every way an agent calls pytest has to work in a mode's environment, or
+# a tool that happens to rewrite the command wins for the wrong reason.
+(
+	# shellcheck source=SCRIPTDIR/setup/_common.sh
+	. "$here/setup/_common.sh"
+	mode_env none
+	for c in "pytest --version" "python -m pytest --version" "python3 -m pytest --version"; do
+		# shellcheck disable=SC2086 # split the command on purpose
+		$c >/dev/null 2>&1 || { echo "FAIL python env: $c" >&2; exit 1; }
+	done
+	echo "ok   python env"
+) || status=1
 for t in "$@"; do
 	d=$here/tasks/$t
 	work=$(mktemp -d)

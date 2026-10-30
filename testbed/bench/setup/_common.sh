@@ -43,7 +43,10 @@ mode_env() {
 	unset XDG_CONFIG_HOME XDG_CACHE_HOME XDG_DATA_HOME XDG_STATE_HOME
 	# Same for every mode: no auto-update in the middle of a run.
 	export DISABLE_AUTOUPDATER=1
-	PATH=$S/bin:$HOME/.local/bin:$PATH
+	# One real Python with pytest, first on PATH for every mode, so pytest
+	# runs the same way however the agent calls it.
+	[ -x "$BENCH/cache/py/bin/pytest" ] || "$BENCH/setup/pyenv.sh" "$BENCH/cache/py" >/dev/null
+	PATH=$BENCH/cache/py/bin:$S/bin:$HOME/.local/bin:$PATH
 	# Commands the tasks need, when the machine lacks them. Appended, so a
 	# real install always wins.
 	if ! command -v go >/dev/null && [ -x /usr/local/go/bin/go ]; then PATH=$PATH:/usr/local/go/bin; fi
