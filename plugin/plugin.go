@@ -85,6 +85,11 @@ func Write(dir, bin, version string) error {
 			return err
 		}
 	}
+	for f, body := range styles {
+		if err := writeFile(filepath.Join(pdir, "output-styles", f), []byte(body)); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -184,8 +189,8 @@ func Uninstall() error {
 }
 
 func writeFile(p string, b []byte) error {
-	if err := os.MkdirAll(filepath.Dir(p), 0o750); err != nil {
+	if err := os.MkdirAll(filepath.Dir(p), 0o750); err != nil { // #nosec G703 -- tacet's own plugin and skill paths
 		return err
 	}
-	return os.WriteFile(p, b, 0o600)
+	return os.WriteFile(p, b, 0o600) // #nosec G703 -- tacet's own plugin and skill paths
 }
