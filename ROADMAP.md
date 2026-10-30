@@ -22,6 +22,5 @@ tokens without hurting answers. Everything below is measured before it is turned
 
 - Codex support
 - Cursor support
-- Homebrew and Scoop packages
 
 Ideas and requests are welcome as issues.
