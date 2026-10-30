@@ -1,7 +1,7 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/assets/hero-dark.svg">
-    <img alt="tacet: one command makes Claude Code use fewer tokens on any project. 38% cheaper than Claude Code alone, 27 of 27 answers correct, one command to set up." src="docs/assets/hero-light.svg" width="760">
+    <img alt="tacet: one command makes Claude Code use fewer tokens on any project. 40% cheaper than Claude Code alone with the same answers, one command to set up." src="docs/assets/hero-light.svg" width="760">
   </picture>
 </p>
 
@@ -36,11 +36,11 @@ cd your-project && tacet init
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/assets/bench-dark.svg">
-    <img alt="Cost per run against Claude Code alone, 9 tasks, 3 runs each: tacet -38%, rtk -9%, serena -4%, claude-mem 0%, caveman +4%, context-mode +4%, graphify +13%" src="docs/assets/bench-light.svg" width="760">
+    <img alt="Cost per run against Claude Code alone, 10 tasks, 3 runs each on Claude Code 2.1.314: tacet -40%, caveman -21%, rtk -15%, serena -11%, Concise style -10%, context-mode -6%, graphify -3%, claude-mem +11%" src="docs/assets/bench-light.svg" width="760">
   </picture>
 </p>
 
-Head to head with the six most popular tools of its kind, on nine tasks: questions about a 43-page PDF and a Word file, finding code in Go, Python and Rust, fixing failing tests and continuing a half-done change. Every tool ran at its defaults, three times per task, with every answer checked. tacet is the cheapest on seven of the nine tasks and got all 27 answers right; rtk is cheaper on continuing a change and serena on fixing a Rust test.
+Head to head with the six most popular tools of its kind and Claude Code's own Concise style, on ten tasks: questions about a 43-page PDF and a Word file, finding code in Go, Python and Rust, fixing failing tests, continuing a half-done change and a large search a subagent does. Every tool ran at its defaults on Claude Code 2.1.314, three times per task, with every answer checked. tacet cost 40% less than Claude Code alone with the same answers (29 of 30, as without it). It is cheapest on the documents, on continuing work and on the subagent search; on quick code lookups in small repos Claude Code alone or serena is a little cheaper, because tacet's code tools add about 450 tokens to each request.
 
 Every number in this README comes from runs anyone can repeat with one command: [method, per-task results and raw data](docs/benchmark.md#against-other-tools).
 
@@ -61,6 +61,7 @@ Every number in this README comes from runs anyone can repeat with one command: 
 |---|---|
 | **Long documents open small** | A PDF, Word, PowerPoint or Excel file is converted to Markdown once and opens on an outline plus the sections that match your request. A 28-page PDF question costs 56% fewer tokens. |
 | **Code found by symbol** | A code map of Go, TypeScript, Python, Rust and nine more languages answers "where is this defined and who calls it" without a grep through the tree. Up to 81% cheaper on a big repo. |
+| **Cheaper search subagents** | Claude Code sends file searching to a subagent that runs on your main model. tacet can run that read-only search agent on Haiku or Sonnet while your main model keeps planning and writing the code; `tacet init` asks which. On a large subagent search it halved the cost with the same answers. |
 | **Office and audio files work** | Claude Code refuses Word, PowerPoint, Excel and audio files outright. tacet converts the document or transcribes the voice note as soon as your prompt names it. |
 | **Secrets stay out** | Reads of `.env` files, keys and credentials are blocked. So are commands like `cat .env`, each with a reason Claude Code can act on. |
 | **Sessions continue** | Before a compact and at session end tacet writes `SESSION.md` from the transcript and git. The next session gets it when you ask to carry on. |
@@ -138,7 +139,7 @@ Only after a yes and only with changes it can undo: `tacet undo` reverts the las
 <details>
 <summary>How is it different from rtk, caveman or claude-mem?</summary>
 
-Those tools each work on one thing: shorter command output, shorter replies, memory between sessions. tacet works on what Claude Code loads and reads across documents, code, instruction files and sessions. It keeps only the features that measured a saving. In the head-to-head above tacet cost 38% less than Claude Code alone; the others ranged from 9% less to 13% more.
+Those tools each work on one thing: shorter command output, shorter replies, memory between sessions. tacet works on what Claude Code loads and reads across documents, code, instruction files and sessions. It keeps only the features that measured a saving. In the head-to-head above tacet cost 40% less than Claude Code alone; the others ranged from 21% less to 11% more.
 
 </details>
 

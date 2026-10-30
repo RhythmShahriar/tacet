@@ -1,5 +1,5 @@
 <p align="center">
-  <img alt="tacet: one command makes Claude Code use fewer tokens on any project. 38% cheaper than Claude Code alone, 27 of 27 answers correct, one command to set up." src="https://raw.githubusercontent.com/RhythmShahriar/tacet/master/docs/assets/hero-light.svg" width="760">
+  <img alt="tacet: one command makes Claude Code use fewer tokens on any project. 40% cheaper than Claude Code alone with the same answers, one command to set up." src="https://raw.githubusercontent.com/RhythmShahriar/tacet/master/docs/assets/hero-light.svg" width="760">
 </p>
 
 <p align="center">
@@ -24,10 +24,10 @@ Restart Claude Code and type `/tacet` to see what it saved. `npx @rhythmsh/tacet
 ## Results
 
 <p align="center">
-  <img alt="Cost per run against Claude Code alone, 9 tasks, 3 runs each: tacet -38%, rtk -9%, serena -4%, claude-mem 0%, caveman +4%, context-mode +4%, graphify +13%" src="https://raw.githubusercontent.com/RhythmShahriar/tacet/master/docs/assets/bench-light.svg" width="760">
+  <img alt="Cost per run against Claude Code alone, 10 tasks, 3 runs each on Claude Code 2.1.314: tacet -40%, caveman -21%, rtk -15%, serena -11%, Concise style -10%, context-mode -6%, graphify -3%, claude-mem +11%" src="https://raw.githubusercontent.com/RhythmShahriar/tacet/master/docs/assets/bench-light.svg" width="760">
 </p>
 
-Head to head with the six most popular tools of its kind on nine tasks, three runs each, every answer checked. tacet is the cheapest on seven of the nine tasks and got all 27 answers right. [Method and raw data](https://github.com/RhythmShahriar/tacet/blob/master/docs/benchmark.md#against-other-tools).
+Head to head with the six most popular tools of its kind on ten tasks, three runs each on Claude Code 2.1.314, every answer checked. tacet cost 40% less than Claude Code alone with the same answers. [Method and raw data](https://github.com/RhythmShahriar/tacet/blob/master/docs/benchmark.md#against-other-tools).
 
 ## What it does
 

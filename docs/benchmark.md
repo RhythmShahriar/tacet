@@ -33,6 +33,47 @@ default. This page lists each measurement and how to repeat it.
 
 ## Against other tools
 
+Ten tasks, every tool at its defaults, three runs each, on Claude Code 2.1.314 (2026-10-30), where "haiku" is Claude Haiku 5.5. The tenth task is a large search that Claude Code hands to its Explore subagent, run with Sonnet as the main model. Every tool runs in its own Claude Code config folder, gets an unrecorded warm-up first and has Python 3.10 with pytest available the same way. An answer counts only when its check passes.
+
+| Tool | Cost per run | Tokens per run | Correct |
+|---|---|---|---|
+| **tacet** (search subagents on Haiku, the `tacet init` default) | **-40%** | -6% | 29/30 |
+| tacet with search subagents on the main model | -6% | -5% | 30/30 |
+| caveman 4.0.1 | -21% | +13% | 29/30 |
+| rtk 1.1.0 | -15% | +2% | 30/30 |
+| serena 2.1.0 | -11% | +5% | 29/30 |
+| Claude Code's Concise output style | -10% | +2% | 28/30 |
+| context-mode 1.0.169 | -6% | +15% | 30/30 |
+| graphify 0.9.97 | -3% | +17% | 30/30 |
+| claude-mem 15.6.0 | +11% | +8% | 29/30 |
+
+Against Claude Code with no tool: 29/30 correct. tacet is the only tool that lowers the tokens processed; every other tool adds some.
+
+Cost per run by task (mean of three runs, US dollars; the cheapest in bold):
+
+| Task | No tool | tacet | tacet, main-model search | rtk | serena | caveman | claude-mem | context-mode | graphify | Concise |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Question about one part of a 43-page PDF | 0.0062 | 0.0058 | **0.0055** | 0.0061 | 0.0059 | 0.0070 | 0.0066 | 0.0069 | 0.0066 | 0.0063 |
+| Facts from the start, middle and end of the PDF | 0.0072 | 0.0068 | **0.0060** | 0.0077 | 0.0102 | 0.0239 | 0.0132 | 0.0091 | 0.0106 | 0.0069 |
+| Question about a Word document | 0.0057 | **0.0043** | 0.0048 | 0.0074 | 0.0062 | 0.0065 | 0.0080 | 0.0068 | 0.0069 | 0.0064 |
+| Where a Go function is defined and called | **0.0040** | 0.0042 | 0.0049 | 0.0042 | 0.0041 | 0.0049 | 0.0057 | 0.0056 | 0.0061 | 0.0044 |
+| Same in a Python repo | 0.0039 | 0.0043 | 0.0046 | 0.0040 | **0.0036** | 0.0048 | 0.0052 | 0.0043 | 0.0056 | 0.0040 |
+| Same in a Rust repo | 0.0041 | 0.0051 | 0.0048 | 0.0042 | **0.0040** | 0.0050 | 0.0056 | 0.0048 | 0.0055 | 0.0043 |
+| Fix a failing Python test | 0.0060 | 0.0058 | 0.0060 | 0.0058 | 0.0069 | 0.0065 | 0.0073 | 0.0070 | 0.0069 | **0.0057** |
+| Fix a failing Rust test | 0.0056 | 0.0056 | 0.0056 | 0.0062 | 0.0056 | 0.0063 | 0.0070 | 0.0063 | 0.0065 | **0.0055** |
+| Continue a half-done change | 0.0109 | 0.0083 | **0.0079** | 0.0082 | 0.0093 | 0.0098 | 0.0097 | 0.0104 | 0.0092 | 0.0085 |
+| Search a large repo with a subagent (main model Sonnet) | 0.1792 | **0.0905** | 0.1694 | 0.1436 | 0.1521 | 0.1086 | 0.1897 | 0.1566 | 0.1626 | 0.1568 |
+
+Where tacet isn't first: quick code lookups in small repos, where Claude Code alone or serena is a little cheaper because tacet's code tools add about 450 tokens to each request. On the two test fixes Concise is a hair cheaper.
+
+What this run changed:
+- **A bug fixed.** Claude Haiku 5.5 opens a PDF by asking for its first pages, which tacet used to pass straight to Claude Code's own reader. The first page read of a long PDF in a session now opens on the outline. The document rows above are from the rerun with the fix.
+- **Claude Code got leaner on its own.** On 2.1.314 every tool sits much closer to Claude Code alone than on 2.1.92 (below). The largest remaining saving is where the work goes: subagents.
+- **Cut: tacet's terse output style.** It cost 1% more than tacet without it and lost two answers.
+- **Not built: skipping repeat reads.** Claude Code 2.1.92 and later already answers a repeat read of an unchanged file with a short note.
+
+## Earlier run on Claude Code 2.1.92
+
 Nine tasks, every tool at its default settings, three runs each, on Claude Haiku through Claude Code 2.1.92 (2026-10-30), with Python 3.10 and pytest 8.3.3 available to every tool the same way. Each tool runs in its own Claude Code config folder so none of them sees another. Before every measured run the tool gets an unrecorded warm-up in the same project, so every run starts with a warm prompt cache and the numbers measure the tool, not who happened to run after a pause. An answer counts only when its check passes: every expected fact for questions, the tests passing for fixes.
 
 | Tool | Version | Cost per run | Tokens per run | Correct |
