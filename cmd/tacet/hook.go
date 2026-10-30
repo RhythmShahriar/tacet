@@ -101,7 +101,7 @@ func handle(root string, cfg *config.Config, event string, in *hookInput) (any, 
 		if cfg.On("guard") && guard.IsSecretPath(ti.FilePath) {
 			return deny(fmt.Sprintf("tacet guard: %s holds secrets, so it stays out of the conversation. Ask the person for the one value you need, or use a .example file.", filepath.Base(ti.FilePath))), nil
 		}
-		return preRead(root, cfg, in.ToolInput, ti.FilePath, in.TranscriptPath)
+		return preRead(root, cfg, in.ToolInput, ti.FilePath, in.TranscriptPath, in.SessionID)
 	case "pre-bash":
 		var ti toolInput
 		_ = json.Unmarshal(in.ToolInput, &ti)
@@ -256,7 +256,7 @@ func logHook(root, event string, err error) {
 
 // preRead sends a read of a PDF or Office file to its Markdown version.
 // Anything that goes wrong lets the original read through.
-func preRead(root string, cfg *config.Config, raw json.RawMessage, path, transcript string) (any, error) {
+func preRead(root string, cfg *config.Config, raw json.RawMessage, path, transcript, session string) (any, error) {
 	if strings.HasPrefix(path, convert.Dir(root)+string(filepath.Separator)) {
 		recordFollowUp(root, path, raw)
 		return nil, nil
@@ -270,11 +270,16 @@ func preRead(root string, cfg *config.Config, raw json.RawMessage, path, transcr
 	in := map[string]any{}
 	_ = json.Unmarshal(raw, &in)
 	isPDF := strings.EqualFold(filepath.Ext(path), ".pdf")
-	if _, pages := in["pages"]; pages && isPDF {
-		return nil, nil // a page range of a PDF: Claude reads it natively for less
-	}
 	if !filepath.IsAbs(path) {
 		path = filepath.Join(root, path)
+	}
+	_, pages := in["pages"]
+	// Newer models open a PDF by asking for its first pages. The first
+	// such read of a long PDF in a session gets the outline instead;
+	// after that the agent knows the document, so later page reads are
+	// what it really wants and pass through.
+	if pages && isPDF && pdfSeen(root, session, path) {
+		return nil, nil
 	}
 	r, err := convert.File(root, path)
 	if errors.Is(err, convert.ErrScanned) {
@@ -282,6 +287,12 @@ func preRead(root string, cfg *config.Config, raw json.RawMessage, path, transcr
 	}
 	if err != nil {
 		return nil, err
+	}
+	if pages && isPDF {
+		if r.Outline == "" || !cfg.On("convert") {
+			return nil, nil // a short PDF: the asked pages are cheap enough
+		}
+		markPDF(root, session, path)
 	}
 	delete(in, "pages")
 	in["file_path"] = r.Path
@@ -475,4 +486,27 @@ func finishPrompt(notes, shown []string) any {
 		"hookSpecificOutput": map[string]any{
 			"hookEventName": "UserPromptSubmit", "additionalContext": ctx,
 		}}
+}
+
+// pdfSeenPath records, per session, the PDFs whose first page read was
+// answered with the outline.
+func pdfSeenPath(root, session string) string {
+	if session == "" {
+		session = "nosession"
+	}
+	return filepath.Join(config.Dir(root), "reads", convert.SafeName(session)+"-pdf.json")
+}
+
+func pdfSeen(root, session, path string) bool {
+	m := map[string]bool{}
+	_ = readFileJSON(pdfSeenPath(root, session), &m)
+	return m[path]
+}
+
+func markPDF(root, session, path string) {
+	m := map[string]bool{}
+	p := pdfSeenPath(root, session)
+	_ = readFileJSON(p, &m)
+	m[path] = true
+	_ = writeFileJSON(p, m)
 }
