@@ -198,8 +198,6 @@ Every command takes `--json` for machine output, `-y` to skip prompts and `-C <d
 | `budget` | off | tells you once per threshold (80% and 100% by default) when a session nears its token budget, set as `budget: {session_tokens: 2000000, warn_at: [0.8, 1.0]}`; never blocks |
 | `bigoutput` | off | experimental: keeps long Bash and WebFetch output in `.tacet/out` and shows the agent the start, the end and the errors |
 | `feedback` | off | runs the project's own linter or type checker (ruff, pyright, cargo check, tsc, go vet) on each edited file and shows the agent only the failures |
-| `terse` | off | selects the `tacet:terse` output style: results first, no preamble or recap, no file contents repeated back, every fact and path kept |
-| `lesscode` | off | selects the `tacet:lesscode` output style: `terse` plus the smallest change that works and no speculative abstractions |
 | `testgate` | off | runs the tests when the agent tries to finish after editing code and sends it back on failures, at most twice a session |
 | `subagents` | off | `tacet init` asks which model the built-in Explore (search) subagent uses: Haiku (recommended, cheapest), Sonnet or your main model. Only that read-only agent changes; your main model still plans and writes the code. Change it any time with `tacet subagents haiku\|sonnet\|main` |
 

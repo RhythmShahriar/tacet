@@ -85,11 +85,6 @@ func Write(dir, bin, version string) error {
 			return err
 		}
 	}
-	for f, body := range styles {
-		if err := writeFile(filepath.Join(pdir, "output-styles", f), []byte(body)); err != nil {
-			return err
-		}
-	}
 	return nil
 }
 

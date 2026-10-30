@@ -63,7 +63,6 @@ Nothing is printed or committed.
 |---|---|---|---|
 | none | Claude Code as installed | nothing | none |
 | tacet | this checkout | built from source; `tacet init --yes` once to install the plugin, then in each project | `mcp__plugin_tacet_tacet` |
-| tacet-terse | this checkout | as tacet, then `tacet on terse` in each project (output style `tacet:terse`) | `mcp__plugin_tacet_tacet` |
 | concise | Claude Code as installed (v2.1.237 or later) | nothing; `outputStyle` `Concise` in each project's settings.local.json | none |
 | tacet-subagents | this checkout | as tacet, then `tacet on subagents` in each project (the Explore subagent on Haiku) | `mcp__plugin_tacet_tacet` |
 | rtk | 1.1.0 | release binary (sha256 pinned), `rtk init -g` | none (Bash hook) |

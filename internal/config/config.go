@@ -30,8 +30,6 @@ var Features = map[string]bool{
 	"budget": false, // warn once per threshold when a session nears its token budget
 
 	"bigoutput": false, // experimental: keep long Bash and WebFetch output in .tacet/out
-	"terse":     false, // output style tacet:terse, results first with no preamble or recap
-	"lesscode":  false, // output style tacet:lesscode, terse plus the smallest change that works
 	"subagents": false, // the Explore subagent runs on Haiku
 }
 

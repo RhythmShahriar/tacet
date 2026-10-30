@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 #
 # Mode "concise": plain Claude Code with its built-in Concise output
-# style and no tacet, to compare tacet's terse style against it. Concise
+# style and no tacet, a baseline for shorter answers. Concise
 # needs Claude Code v2.1.237 or later; an older one falls back to Default.
 #
 #   concise.sh [install]          the login, nothing else
