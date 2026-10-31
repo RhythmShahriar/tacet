@@ -4,6 +4,7 @@
 package clean
 
 import (
+	"encoding/json"
 	"errors"
 	"os"
 	"os/exec"
@@ -205,7 +206,8 @@ func TestStaleOtherEntryBlocksPrune(t *testing.T) {
 	}
 	r := inspect(t, root, later())
 	r.Remove()
-	if r.Pruned || !strings.Contains(run(t, root, "worktree", "list", "--porcelain"), other) {
+	// git prints paths with forward slashes, Windows included.
+	if r.Pruned || !strings.Contains(run(t, root, "worktree", "list", "--porcelain"), filepath.ToSlash(other)) {
 		t.Fatal("a stale entry outside the agent patterns was pruned")
 	}
 }
@@ -399,8 +401,8 @@ func TestReposFromTranscriptCwd(t *testing.T) {
 	home := t.TempDir()
 	// The folder name decodes to nothing real; the cwd inside wins. A
 	// session run in an agent worktree resolves to the same repo.
-	write(t, filepath.Join(home, "projects", "-no-such-dir", "s.jsonl"), `{"type":"user","cwd":"`+root+`"}`+"\n")
-	write(t, filepath.Join(home, "projects", "-other", "s.jsonl"), `{"type":"x"}`+"\n"+`{"cwd":"`+p+`"}`+"\n")
+	write(t, filepath.Join(home, "projects", "-no-such-dir", "s.jsonl"), `{"type":"user","cwd":`+jsonString(root)+`}`+"\n")
+	write(t, filepath.Join(home, "projects", "-other", "s.jsonl"), `{"type":"x"}`+"\n"+`{"cwd":`+jsonString(p)+`}`+"\n")
 	got := Repos(home)
 	if len(got) != 1 || got[0] != root {
 		t.Fatalf("got %v, want [%s]", got, root)
@@ -457,8 +459,12 @@ func TestAgentLocks(t *testing.T) {
 	mine := agent(t, root, "mine")
 	run(t, root, "worktree", "lock", "--reason", "on a usb disk", mine)
 	r := inspect(t, root, later())
-	if w := find(r, dead); !w.Safe || !w.DeadLock {
+	// Windows can't tell here whether the agent still runs, so every
+	// lock stays a lock there.
+	if w := find(r, dead); runtime.GOOS != "windows" && (!w.Safe || !w.DeadLock) {
 		t.Fatalf("lock of an exited agent: want safe, got %+v", w)
+	} else if runtime.GOOS == "windows" && w.Safe {
+		t.Fatalf("on Windows a lock must keep the worktree, got %+v", w)
 	}
 	for _, p := range []string{live, mine} {
 		if w := find(r, p); w.Safe || !slices.Contains(w.Reasons, ReasonLocked) {
@@ -586,4 +592,10 @@ func TestRebuildablePatterns(t *testing.T) {
 			t.Errorf("%s must not be treated as rebuildable", p)
 		}
 	}
+}
+
+// jsonString is s as a JSON string, so Windows paths stay valid JSON.
+func jsonString(s string) string {
+	b, _ := json.Marshal(s)
+	return string(b)
 }
