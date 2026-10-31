@@ -83,3 +83,14 @@ func TestReportUsage(t *testing.T) {
 		t.Fatalf("exit %d, want %d", c, exitUsage)
 	}
 }
+
+func TestPlural(t *testing.T) {
+	for in, want := range map[string]string{"merged branch": "2 merged branches", "stale entry": "2 stale entries", "worktree": "2 worktrees", "day": "2 days", "file": "2 files", "class": "2 classes"} {
+		if got := plural(2, in); got != want {
+			t.Errorf("plural(2, %q) = %q, want %q", in, got, want)
+		}
+	}
+	if plural(1, "stale entry") != "1 stale entry" {
+		t.Error("singular")
+	}
+}

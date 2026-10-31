@@ -270,7 +270,19 @@ func plural(n int, word string) string {
 	if n == 1 {
 		return "1 " + word
 	}
-	return fmt.Sprintf("%d %ss", n, word)
+	return fmt.Sprintf("%d %s", n, pluralWord(word))
+}
+
+// pluralWord is the English plural of the last word of w: branch,
+// entry and worktree become branches, entries and worktrees.
+func pluralWord(w string) string {
+	switch {
+	case strings.HasSuffix(w, "ch"), strings.HasSuffix(w, "sh"), strings.HasSuffix(w, "s"), strings.HasSuffix(w, "x"), strings.HasSuffix(w, "z"):
+		return w + "es"
+	case strings.HasSuffix(w, "y") && len(w) > 1 && !strings.ContainsRune("aeiou", rune(w[len(w)-2])):
+		return w[:len(w)-1] + "ies"
+	}
+	return w + "s"
 }
 
 func noteSuffix(n string) string {
