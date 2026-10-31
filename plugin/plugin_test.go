@@ -61,3 +61,12 @@ func TestSkillDraftsOnDemand(t *testing.T) {
 		}
 	}
 }
+
+func TestSkillOffersClean(t *testing.T) {
+	s := Skill("tacet")
+	for _, want := range []string{"Bash(tacet clean:*)", "tacet clean --dry-run", "Only on a yes run `tacet clean --yes`", "Never pass --force", "--transcripts"} {
+		if !strings.Contains(s, want) {
+			t.Errorf("the /tacet skill lacks %q", want)
+		}
+	}
+}
