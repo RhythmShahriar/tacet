@@ -37,12 +37,16 @@ const recent = time.Hour
 
 // forceable are the reasons --force overrides for a worktree the person
 // named. Locks, the current directory and recent use still keep it.
-var forceable = []string{ReasonChanges, ReasonUntracked, ReasonUnique, ReasonNewer}
+var forceable = []string{ReasonChanges, ReasonUntracked, ReasonUnique, ReasonNewer, ReasonIgnored}
 
 // Options tunes Inspect and Remove.
 type Options struct {
 	// OlderThan keeps worktrees changed more recently than this.
 	OlderThan time.Duration
+	// Rescue copies a worktree's unique ignored files into the main
+	// checkout's .tacet/rescued before removing it, so they no longer
+	// keep it.
+	Rescue bool
 	// Named are worktrees the person named by path, folder or branch.
 	// A named worktree outside the agent patterns becomes a candidate.
 	Named []string
@@ -97,9 +101,13 @@ type Worktree struct {
 	Changes    int       `json:"uncommitted,omitempty"`
 	Untracked  int       `json:"untracked,omitempty"`
 	Unique     int       `json:"unique_commits,omitempty"`
-	Safe       bool      `json:"safe"`
-	Forced     bool      `json:"forced,omitempty"`
-	Reasons    []string  `json:"kept_because,omitempty"`
+	// Ignored are git-ignored files the main checkout lacks or has with
+	// other content; Rescued means Remove copies them out first.
+	Ignored []string `json:"ignored_files,omitempty"`
+	Rescued bool     `json:"rescue,omitempty"`
+	Safe    bool     `json:"safe"`
+	Forced  bool     `json:"forced,omitempty"`
+	Reasons []string `json:"kept_because,omitempty"`
 
 	Removed       bool   `json:"removed,omitempty"`
 	BranchDeleted bool   `json:"branch_deleted,omitempty"`
@@ -199,6 +207,10 @@ func Inspect(dir string, o Options) (*Repo, error) {
 		case o.OlderThan > 0 && now.Sub(act) < o.OlderThan:
 			w.Reasons = append(w.Reasons, ReasonNewer)
 		}
+		if o.Rescue && len(w.Ignored) > 0 && slices.Contains(w.Reasons, ReasonIgnored) {
+			w.Reasons = slices.DeleteFunc(w.Reasons, func(x string) bool { return x == ReasonIgnored })
+			w.Rescued = true
+		}
 		w.Safe = len(w.Reasons) == 0
 		w.Forced = !w.Safe && w.Named && o.Force && (!w.Locked || w.DeadLock) && allForceable(w.Reasons)
 	}
@@ -262,6 +274,11 @@ func (r *Repo) check(w *Worktree, cwd string) {
 	if w.Untracked > 0 {
 		w.Reasons = append(w.Reasons, ReasonUntracked)
 	}
+	if files, iok := ignoredUnique(w.Path, r.Root); !iok {
+		ok = false
+	} else if w.Ignored = files; len(files) > 0 {
+		w.Reasons = append(w.Reasons, ReasonIgnored)
+	}
 	n, err := r.unique(w)
 	if err != nil {
 		ok = false
@@ -302,6 +319,12 @@ func (r *Repo) Remove() int64 {
 	for _, w := range r.Worktrees {
 		if !w.Remove() {
 			continue
+		}
+		if w.Rescued {
+			if err := r.rescue(w); err != nil {
+				w.Error = "rescue failed, kept: " + err.Error()
+				continue
+			}
 		}
 		if !r.unlock(w) {
 			continue

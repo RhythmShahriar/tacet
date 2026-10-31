@@ -39,10 +39,10 @@ const (
 var cleanNow = time.Now
 
 type cleanFlags struct {
-	all, dry, force, transcripts bool
-	summary                      bool // hidden: write .tacet/clean.json and stop
-	older                        time.Duration
-	names                        []string
+	all, dry, force, transcripts, rescue bool
+	summary                              bool // hidden: write .tacet/clean.json and stop
+	older                                time.Duration
+	names                                []string
 }
 
 func parseCleanFlags(args []string) (cleanFlags, error) {
@@ -57,6 +57,8 @@ func parseCleanFlags(args []string) (cleanFlags, error) {
 			f.force = true
 		case "--transcripts":
 			f.transcripts = true
+		case "--rescue":
+			f.rescue = true
 		case "--summary":
 			f.summary, f.dry = true, true
 		case "--older-than":
@@ -71,7 +73,7 @@ func parseCleanFlags(args []string) (cleanFlags, error) {
 			i++
 		default:
 			if strings.HasPrefix(x, "-") {
-				return f, fmt.Errorf("%w: tacet clean [--all] [--dry-run] [--older-than 7d] [--transcripts] [--force <worktree>...]", errUsage)
+				return f, fmt.Errorf("%w: tacet clean [--all] [--dry-run] [--rescue] [--older-than 7d] [--transcripts] [--force <worktree>...]", errUsage)
 			}
 			f.names = append(f.names, x)
 		}
@@ -195,7 +197,7 @@ func runClean(a *app, args []string) error {
 	} else {
 		dirs = []string{a.root()}
 	}
-	o := clean.Options{OlderThan: f.older, Named: f.names, Force: f.force, Progress: progressLine(a), Now: cleanNow()}
+	o := clean.Options{OlderThan: f.older, Named: f.names, Force: f.force, Rescue: f.rescue, Progress: progressLine(a), Now: cleanNow()}
 	var repos []*clean.Repo
 	for _, d := range dirs {
 		r, err := clean.Inspect(d, o)
@@ -373,12 +375,16 @@ func printClean(w io.Writer, repos []*clean.Repo, t cleanTotals, all bool) {
 					note += ui.Dim.Render("  locked by an agent that exited")
 				}
 				fmt.Fprintf(w, "    %-26s %-28s %10s  %s%s\n", shortPath(r.Root, x.Path), x.Branch, sizeText(x), ui.Dim.Render("changed "+day(x.Modified)), note)
+				if x.Rescued {
+					fmt.Fprintf(w, "      %s\n", ui.Dim.Render(fmt.Sprintf("first copies %s to %s", plural(len(x.Ignored), "ignored file"), clean.RescueDir(r.Root, x))))
+				}
 			}
 		}
 		if len(kept) > 0 {
 			fmt.Fprintf(w, "  %s  %s, %s\n", ui.Label.Render("kept"), plural(len(kept), "worktree"), "nothing in them is touched")
 			for _, x := range kept {
 				fmt.Fprintf(w, "    %-26s %-28s %10s  %s\n", shortPath(r.Root, x.Path), x.Branch, sizeText(x), ui.Dim.Render(reasonText(x)))
+				printIgnored(w, x)
 			}
 		}
 		if len(r.Stale) > 0 {
@@ -417,6 +423,10 @@ func printClean(w io.Writer, repos []*clean.Repo, t cleanTotals, all bool) {
 		fmt.Fprintf(w, "  kept because: %s\n", strings.Join(why, ", "))
 	}
 	fmt.Fprintf(w, "  removing them frees about %s%s\n", ui.Brand.Render(clean.HumanBytes(t.Bytes)), sharedNote(t.Shared))
+	if t.KeptBy[clean.ReasonIgnored] > 0 {
+		fmt.Fprintf(w, "  %s hold ignored files your main checkout doesn't have (test logins, local env files, scripts); %s copies them to .tacet/rescued first\n",
+			plural(t.KeptBy[clean.ReasonIgnored], "kept worktree"), ui.Label.Render("tacet clean --rescue"))
+	}
 	if t.Stale > 0 || t.Other > 0 {
 		fmt.Fprintf(w, "  %s, %s left alone\n", plural(t.Stale, "stale entry"), plural(t.Other, "other worktree"))
 	}
@@ -570,4 +580,21 @@ var refreshClean = func(root string) {
 	if cmd.Start() == nil {
 		_ = cmd.Process.Release()
 	}
+}
+
+// printIgnored names a few of the ignored files that keep a worktree, so
+// the person can see what would have been lost.
+func printIgnored(w io.Writer, x *clean.Worktree) {
+	if len(x.Ignored) == 0 {
+		return
+	}
+	shown := x.Ignored
+	if len(shown) > 4 {
+		shown = shown[:4]
+	}
+	more := ""
+	if n := len(x.Ignored) - len(shown); n > 0 {
+		more = fmt.Sprintf(" and %d more", n)
+	}
+	fmt.Fprintf(w, "      %s\n", ui.Dim.Render("ignored, not in main: "+strings.Join(shown, ", ")+more))
 }

@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"strconv"
 	"strings"
@@ -467,5 +468,109 @@ func TestAgentLocks(t *testing.T) {
 	r.Remove()
 	if exists(dead) || !exists(live) || !exists(mine) {
 		t.Fatal("want only the worktree of the exited agent removed")
+	}
+}
+
+// ignoredRepo is a repo whose .gitignore also hides local env files and
+// test logins, the kinds of files agents leave in ignored folders.
+func ignoredRepo(t *testing.T) string {
+	t.Helper()
+	root := repo(t)
+	write(t, filepath.Join(root, ".gitignore"), "node_modules/\n.env.local\ne2e/.auth/\n.next/\n")
+	run(t, root, "commit", "-q", "-am", "ignore more")
+	return root
+}
+
+func TestIgnoredFilesKeepAWorktree(t *testing.T) {
+	root := ignoredRepo(t)
+	p := agent(t, root, "i1")
+	write(t, filepath.Join(p, "e2e", ".auth", "admin-totp.txt"), "JBSWY3DPEHPK3PXP\n")
+	write(t, filepath.Join(p, "e2e", ".auth", "gate.py"), "print('only here')\n")
+	r := inspect(t, root, later())
+	w := find(r, p)
+	if w.Safe || !slices.Contains(w.Reasons, ReasonIgnored) {
+		t.Fatalf("ignored files only in the worktree must keep it: %+v", w)
+	}
+	if len(w.Ignored) != 2 {
+		t.Fatalf("ignored files %v", w.Ignored)
+	}
+	r.Remove()
+	if !exists(p) {
+		t.Fatal("a kept worktree was removed")
+	}
+}
+
+func TestIgnoredFilesSameAsMainOrRebuildable(t *testing.T) {
+	root := ignoredRepo(t)
+	write(t, filepath.Join(root, ".env.local"), "A=1\n")
+	p := agent(t, root, "i2")
+	write(t, filepath.Join(p, ".env.local"), "A=1\n")                        // the same as the main checkout
+	write(t, filepath.Join(p, "node_modules", "x", "index.js"), "x\n")       // rebuildable
+	write(t, filepath.Join(p, ".next", "cache", "build.json"), "{}\n")       // rebuildable
+	write(t, filepath.Join(p, "app.tsbuildinfo"), "{}\n")                    // rebuildable and untracked
+	run(t, p, "rm", "-q", "--cached", "--ignore-unmatch", "app.tsbuildinfo") // stays untracked
+	os.Remove(filepath.Join(p, "app.tsbuildinfo"))
+	r := inspect(t, root, later())
+	if w := find(r, p); !w.Safe || len(w.Ignored) != 0 {
+		t.Fatalf("only rebuildable or identical ignored files: want safe, got %+v", w)
+	}
+}
+
+func TestIgnoredEnvThatDiffersKeeps(t *testing.T) {
+	root := ignoredRepo(t)
+	write(t, filepath.Join(root, ".env.local"), "A=1\n")
+	p := agent(t, root, "i3")
+	write(t, filepath.Join(p, ".env.local"), "A=2\n")
+	if w := find(inspect(t, root, later()), p); w.Safe || len(w.Ignored) != 1 || w.Ignored[0] != ".env.local" {
+		t.Fatalf("a different .env.local must keep the worktree: %+v", w)
+	}
+}
+
+func TestRescueCopiesThenRemoves(t *testing.T) {
+	root := ignoredRepo(t)
+	p := agent(t, root, "i4")
+	write(t, filepath.Join(p, "e2e", ".auth", "admin-totp.txt"), "SECRET\n")
+	o := later()
+	o.Rescue = true
+	r := inspect(t, root, o)
+	w := find(r, p)
+	if !w.Safe || !w.Rescued {
+		t.Fatalf("with --rescue the worktree is removable after copying: %+v", w)
+	}
+	r.Remove()
+	if exists(p) {
+		t.Fatal("worktree not removed")
+	}
+	got, err := os.ReadFile(filepath.Join(RescueDir(root, w), "e2e", ".auth", "admin-totp.txt"))
+	if err != nil || string(got) != "SECRET\n" {
+		t.Fatalf("rescued file: %q %v", got, err)
+	}
+	if fi, _ := os.Stat(filepath.Join(RescueDir(root, w), "e2e", ".auth", "admin-totp.txt")); runtime.GOOS != "windows" && fi.Mode().Perm() != 0o600 {
+		t.Errorf("rescued file mode %v, want the original 0600", fi.Mode().Perm())
+	}
+	if out := run(t, root, "status", "--porcelain"); strings.Contains(out, ".tacet") {
+		t.Fatalf("rescued files show in git status:\n%s", out)
+	}
+}
+
+func TestRescueFailureKeeps(t *testing.T) {
+	if runtime.GOOS == "windows" || os.Getuid() == 0 {
+		t.Skip("needs a folder the user can't write")
+	}
+	root := ignoredRepo(t)
+	p := agent(t, root, "i5")
+	write(t, filepath.Join(p, "e2e", ".auth", "admin.json"), "{}\n")
+	write(t, filepath.Join(root, ".tacet", "keep"), "x")
+	if err := os.Chmod(filepath.Join(root, ".tacet"), 0o500); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = os.Chmod(filepath.Join(root, ".tacet"), 0o700) })
+	o := later()
+	o.Rescue = true
+	r := inspect(t, root, o)
+	r.Remove()
+	w := find(r, p)
+	if !exists(p) || w.Removed || !strings.Contains(w.Error, "rescue failed") {
+		t.Fatalf("a failed rescue must keep the worktree: %+v", w)
 	}
 }
