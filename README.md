@@ -66,6 +66,7 @@ Every number in this README comes from runs anyone can repeat with one command: 
 | **Secrets stay out** | Reads of `.env` files, keys and credentials are blocked. So are commands like `cat .env`, each with a reason Claude Code can act on. |
 | **Sessions continue** | Before a compact and at session end tacet writes `SESSION.md` from the transcript and git. The next session gets it when you ask to carry on. |
 | **Instruction files stay lean** | `CLAUDE.md`, `AGENTS.md` and rules files are checked for stale paths, duplicates and procedures that belong in a skill. Repeated requests become skill drafts. |
+| **Disk space back** | Agents that run in a worktree leave a full checkout behind, `node_modules` and build output included. `tacet clean` removes the ones with no uncommitted change and no commit missing from your other branches, deletes their branch only when git agrees it is merged and lists everything it keeps with the reason. `--dry-run` shows the plan first; old transcripts go only with `--transcripts`. |
 | **Updates you approve** | `tacet update` checks the release signature and checksum before it replaces anything. It never runs without your yes. |
 
 ## Install
@@ -176,6 +177,7 @@ Most people only run `tacet init`. For a look or a change:
 | `tacet skills add <owner/repo/path[@ref]>` | imports a public skill pinned to a commit after a yes; never overwrites, refuses scripts unless `--allow-scripts` (`--list` shows examples) |
 | `tacet subagents haiku\|sonnet\|main` | which model the read-only search subagent uses (no argument shows the current one) |
 | `tacet skills check` | skills that never trigger, run long or overlap, with the startup tokens each fix saves |
+| `tacet clean` | removes agent worktrees with no unsaved work after a yes, along with stale entries and tacet's old caches, then prints the space freed (`--dry-run` lists only, `--all` covers every project Claude Code knows, `--older-than 7d` skips recent ones, `--transcripts` deletes old session transcripts instead, `--force <worktree>` only for one you name) |
 | `tacet on <feature>` / `tacet off <feature>` | turns a feature on or off for this project |
 | `tacet undo` | reverts tacet's last change |
 | `tacet uninstall` | removes tacet from this project and restores your files |

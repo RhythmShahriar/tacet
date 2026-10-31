@@ -112,7 +112,7 @@ func runCheck(a *app, args []string) error {
 	// CI has no transcripts or user config; judge only what is in the repo.
 	var fs []core.Finding
 	for _, f := range s.all() {
-		if strings.HasPrefix(f.Rule, "cache/") || f.Rule == "git/attribution" || strings.HasSuffix(f.Rule, "/unused") || strings.HasPrefix(f.Rule, "statusline/") {
+		if strings.HasPrefix(f.Rule, "cache/") || f.Rule == "git/attribution" || strings.HasSuffix(f.Rule, "/unused") || strings.HasPrefix(f.Rule, "statusline/") || strings.HasPrefix(f.Rule, "clean/") {
 			continue
 		}
 		fs = append(fs, f)
@@ -171,6 +171,11 @@ func runUndo(a *app, _ []string) error {
 func runApply(a *app, args []string) error {
 	if len(args) != 1 {
 		return fmt.Errorf("%w: tacet apply <fix-id>", errUsage)
+	}
+	if args[0] == cleanFixID {
+		// The person said yes to it in /tacet: remove the safe ones.
+		a.yes = true
+		return runClean(a, nil)
 	}
 	root := a.root()
 	s, err := doScan(root, time.Time{})
