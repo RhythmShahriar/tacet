@@ -5,6 +5,7 @@
 <p align="center">
   <a href="https://github.com/RhythmShahriar/tacet"><b>GitHub</b></a> ·
   <a href="https://github.com/RhythmShahriar/tacet/blob/master/docs/benchmark.md">Benchmark</a> ·
+  <a href="https://github.com/RhythmShahriar/tacet/blob/master/docs/README.md">Docs</a> ·
   <a href="https://github.com/RhythmShahriar/tacet#what-it-does">What it does</a> ·
   <a href="https://github.com/RhythmShahriar/tacet/releases">Releases</a>
 </p>
@@ -42,6 +43,6 @@ Head to head with the six most popular tools of its kind on ten tasks, three run
 
 It is a few kilobytes with no dependencies and no install scripts. The first time you run `tacet` it downloads the binary for your system from the GitHub release, checks it against the SHA-256 published with this package and keeps it in your user cache. The package is published from CI with npm provenance. Update with `npm i -g @rhythmsh/tacet@latest`.
 
-Other installs (curl, PowerShell, Homebrew, Scoop, Go), docs and the source: [github.com/RhythmShahriar/tacet](https://github.com/RhythmShahriar/tacet).
+Other installs (curl, PowerShell, Homebrew, Scoop, Go) and the source: [github.com/RhythmShahriar/tacet](https://github.com/RhythmShahriar/tacet). Every command and feature: [the docs](https://github.com/RhythmShahriar/tacet/blob/master/docs/README.md).
 
 Made by Rhythm Shahriar. MIT license.

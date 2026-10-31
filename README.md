@@ -19,7 +19,8 @@
   <a href="#results">Results</a> ·
   <a href="#what-it-does">What it does</a> ·
   <a href="#honest-limits">Honest limits</a> ·
-  <a href="docs/benchmark.md">Benchmark</a>
+  <a href="docs/benchmark.md">Benchmark</a> ·
+  <a href="docs/README.md">Docs</a>
 </p>
 
 <br>
@@ -158,93 +159,31 @@ Yes. The plugin, `/tacet` and the hooks work the same in the VS Code extension a
 
 </details>
 
-## Reference
+## Docs
 
-<details>
-<summary>Commands</summary>
+The full docs are in [docs/](docs/README.md): [getting started](docs/getting-started.md), [how it works](docs/how-it-works.md), [configuration](docs/configuration.md), [CI](docs/ci.md), the [FAQ](docs/faq.md) and a page for every command and feature.
 
 Most people only run `tacet init`. For a look or a change:
 
 | Command | Does |
 |---|---|
-| `tacet` or `tacet status` | what tacet saved and what is waiting for you |
-| `tacet report` | writes `.tacet/report.html` and opens it (`--no-open` to skip): savings since init, usage and estimated cost by day, model and tool for the last 14 days |
-| `tacet statusline --install` | adds tokens saved today, cache hits, context and rate limits to Claude Code's statusline, terminal only (`--chain` keeps a statusline you already have) |
-| `tacet measure` | context loaded at startup and what past sessions billed |
-| `tacet audit` | setup findings, each with a fix |
-| `tacet docs lint` | checks `CLAUDE.md`, `AGENTS.md` and rules files (`fix`, `init` and `sync` change them) |
-| `tacet skills new "<what>"` | drafts a skill from a description (or the latest session with `--from-session`) and writes it after a yes |
-| `tacet skills add <owner/repo/path[@ref]>` | imports a public skill pinned to a commit after a yes; never overwrites, refuses scripts unless `--allow-scripts` (`--list` shows examples) |
-| `tacet subagents haiku\|sonnet\|main` | which model the read-only search subagent uses (no argument shows the current one) |
-| `tacet skills check` | skills that never trigger, run long or overlap, with the startup tokens each fix saves |
-| `tacet clean` | removes agent worktrees with no unsaved work after a yes, along with stale entries and tacet's old caches, then prints the space freed (`--dry-run` lists only, `--all` covers every project Claude Code knows, `--older-than 7d` skips recent ones, `--transcripts` deletes old session transcripts instead, `--force <worktree>` only for one you name) |
-| `tacet on <feature>` / `tacet off <feature>` | turns a feature on or off for this project |
-| `tacet undo` | reverts tacet's last change |
-| `tacet uninstall` | removes tacet from this project and restores your files |
-| `tacet update` | installs the latest release after a yes, once its signature and checksum verify (`--rollback` restores the previous binary) |
+| [`tacet status`](docs/commands/status.md) | what tacet saved and what is waiting for you (`/tacet` inside Claude Code) |
+| [`tacet report`](docs/commands/report.md) | HTML report of savings, usage and cost by day |
+| [`tacet statusline`](docs/commands/statusline.md) | savings in Claude Code's statusline, terminal only |
+| [`tacet measure`](docs/commands/measure.md) | context loaded at startup and what past sessions billed |
+| [`tacet audit`](docs/commands/audit.md) | setup findings, each with a fix |
+| [`tacet docs`](docs/commands/docs.md) | lint, fix, create and sync `CLAUDE.md`, `AGENTS.md` and rules files |
+| [`tacet skills`](docs/commands/skills.md) | draft, import and check skills |
+| [`tacet subagents`](docs/commands/subagents.md) | which model the search subagent uses |
+| [`tacet map`](docs/commands/map.md) | ranked code map |
+| [`tacet clean`](docs/commands/clean.md) | removes agent worktrees with no unsaved work |
+| [`tacet transcribe`](docs/commands/transcribe.md) | audio to a Markdown transcript |
+| [`tacet on`](docs/commands/on.md), [`off`](docs/commands/off.md) | turns a [feature](docs/README.md#features) on or off |
+| [`tacet undo`](docs/commands/undo.md), [`uninstall`](docs/commands/uninstall.md) | reverts the last change, or all of them |
+| [`tacet check`](docs/commands/check.md) | docs lint and audit for [CI](docs/ci.md) |
+| [`tacet update`](docs/commands/update.md) | updates to the latest signed release after a yes |
 
 Every command takes `--json` for machine output, `-y` to skip prompts and `-C <dir>` to run in another folder.
-
-</details>
-
-<details>
-<summary>Features</summary>
-
-| Feature | Default | What it does |
-|---|---|---|
-| `convert` | on | PDF and Office files read as Markdown, long ones on an outline of their sections |
-| `guard` | on | blocks reads of secrets |
-| `handoff` | on | `SESSION.md` written before compact and at session end |
-| `audio` | on | audio read as a transcript, asking before the first download |
-| `map` | on | code map for the MCP tools |
-| `skills` | on | suggests skills from repeated instructions |
-| `budget` | off | tells you once per threshold (80% and 100% by default) when a session nears its token budget, set as `budget: {session_tokens: 2000000, warn_at: [0.8, 1.0]}`; never blocks |
-| `bigoutput` | off | experimental: keeps long Bash and WebFetch output in `.tacet/out` and shows the agent the start, the end and the errors |
-| `feedback` | off | runs the project's own linter or type checker (ruff, pyright, cargo check, tsc, go vet) on each edited file and shows the agent only the failures |
-| `testgate` | off | runs the tests when the agent tries to finish after editing code and sends it back on failures, at most twice a session |
-| `subagents` | off | `tacet init` asks which model the built-in Explore (search) subagent uses: Haiku (recommended, cheapest), Sonnet or your main model. Only that read-only agent changes; your main model still plans and writes the code. Change it any time with `tacet subagents haiku\|sonnet\|main` |
-
-The same switches live in `.tacet/config.yaml`, with `audit_every` for the number of sessions between quiet re-audits and `budget` for the budget thresholds.
-
-</details>
-
-<details>
-<summary>CI</summary>
-
-`tacet check` runs the docs lint and the audit and exits 1 on a finding at or above `--fail-on` (high, medium, low or info; default medium). It judges only what is in the repository.
-
-```yaml
-- uses: actions/setup-go@v5
-  with:
-    go-version: stable
-- run: go install -tags gotreesitter_no_copyleft github.com/RhythmShahriar/tacet/cmd/tacet@latest
-- run: tacet check --fail-on medium
-```
-
-Exit codes: 0 ok, 1 a finding at or above `--fail-on`, 2 usage error, 3 any other error.
-
-</details>
-
-<details>
-<summary>Uninstall</summary>
-
-In each project where you ran `tacet init`:
-
-```sh
-tacet uninstall
-```
-
-It reverts every change tacet made there, removes the Claude Code plugin and the `/tacet` skill and deletes `.tacet/`. Then remove the binary the way you installed it:
-
-| Installed with | Remove with |
-|---|---|
-| Install script | delete `tacet` from the folder it used (`~/.local/bin`, Windows: `%LOCALAPPDATA%\Programs\tacet`) |
-| Homebrew | `brew uninstall --cask tacet` |
-| Scoop | `scoop uninstall tacet` |
-| npm | `npm uninstall -g @rhythmsh/tacet`, then delete the cached binary in `~/.cache/tacet/npm` (`~/Library/Caches/tacet/npm` on macOS, `%LOCALAPPDATA%\tacet\npm` on Windows) |
-| Go | delete `tacet` from `$(go env GOPATH)/bin` |
-
-</details>
 
 ## Contributing
 

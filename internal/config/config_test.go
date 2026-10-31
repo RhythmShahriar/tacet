@@ -12,23 +12,23 @@ import (
 	"testing"
 )
 
-// The README's feature table lists exactly the features tacet has.
+// The docs index's feature table lists exactly the features tacet has.
 func TestReadmeFeatures(t *testing.T) {
-	b, err := os.ReadFile(filepath.Join("..", "..", "README.md"))
+	b, err := os.ReadFile(filepath.Join("..", "..", "docs", "README.md"))
 	if err != nil {
 		t.Fatal(err)
 	}
-	row := regexp.MustCompile("(?m)^\\| `([a-z]+)` \\| (on|off) \\|")
+	row := regexp.MustCompile(`(?m)^\| \[([a-z]+)\]\(features/[a-z]+\.md\) \| (on|off)\b`)
 	var got []string
 	for _, m := range row.FindAllStringSubmatch(string(b), -1) {
 		got = append(got, m[1])
 		if want := map[bool]string{true: "on", false: "off"}[Features[m[1]]]; m[2] != want {
-			t.Errorf("README says %s is %s by default, config says %s", m[1], m[2], want)
+			t.Errorf("docs/README.md says %s is %s by default, config says %s", m[1], m[2], want)
 		}
 	}
 	sort.Strings(got)
 	if strings.Join(got, ",") != strings.Join(FeatureNames(), ",") {
-		t.Fatalf("README features %v, config %v", got, FeatureNames())
+		t.Fatalf("docs/README.md features %v, config %v", got, FeatureNames())
 	}
 }
 
