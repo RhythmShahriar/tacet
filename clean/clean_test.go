@@ -219,7 +219,7 @@ func TestMainWorktreeNeverTouched(t *testing.T) {
 		t.Fatalf("naming the main worktree: got %v, want ErrMain", err)
 	}
 	// Run from inside an agent worktree, the main one is still not a
-	// candidate, and the current one is kept.
+	// candidate and the current one is kept.
 	p := filepath.Join(root, ".claude", "worktrees", "agent-m1")
 	o = later()
 	o.Cwd = p
@@ -259,7 +259,7 @@ func TestBranchDeletedOnlyWhenMerged(t *testing.T) {
 	write(t, filepath.Join(p, "c.txt"), "c\n")
 	run(t, p, "add", "c.txt")
 	run(t, p, "commit", "-q", "-m", "side work")
-	// Another branch holds the commit, so nothing is unique, but main
+	// Another branch holds the commit, so nothing is unique but main
 	// does not have it: the worktree goes and the branch stays.
 	run(t, root, "branch", "keep-side", "worktree-agent-side")
 	r := inspect(t, root, later())

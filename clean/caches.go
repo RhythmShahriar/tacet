@@ -24,7 +24,7 @@ type Cache struct {
 
 // Caches lists tacet's cache files under root that are safe to delete:
 // big tool outputs older than a week, conversions and transcripts of
-// files that no longer exist, and the per-session read records.
+// files that no longer exist and the per-session read records.
 func Caches(root string, now time.Time) []Cache {
 	dir := filepath.Join(root, ".tacet")
 	var out []Cache

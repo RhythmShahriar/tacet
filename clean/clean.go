@@ -293,7 +293,7 @@ func (r *Repo) unique(w *Worktree) (int, error) {
 	return strconv.Atoi(strings.TrimSpace(out))
 }
 
-// Remove takes away every Safe worktree, and the Forced ones, with git
+// Remove takes away every Safe worktree and the Forced ones, with git
 // worktree remove; deletes each agent branch only when git branch -d
 // agrees it is merged; then prunes stale entries. It returns the bytes
 // freed.
@@ -385,7 +385,7 @@ func deadAgentLock(reason string) bool {
 }
 
 // deleteBranch deletes the branch of a removed worktree when Claude
-// Code named it, or the person named the worktree, and only through
+// Code named it, or the person named the worktree and only through
 // git branch -d, which refuses a branch that is not fully merged.
 func (r *Repo) deleteBranch(w *Worktree) {
 	if w.Branch == "" || (!AgentBranch(w.Branch) && !w.Named) {
@@ -436,7 +436,7 @@ func within(p, dir string) bool {
 }
 
 // stamps is the newest of the times git touches when a worktree is
-// used: the folder, and its index, HEAD and HEAD log in the git dir.
+// used: the folder and its index, HEAD and HEAD log in the git dir.
 func stamps(path string) time.Time {
 	var t time.Time
 	see := func(p string) {

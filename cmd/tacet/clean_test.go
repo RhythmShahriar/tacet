@@ -18,7 +18,7 @@ import (
 )
 
 // cleanRepo is a temp repository with one commit and n clean agent
-// worktrees, and the clock moved past the in-use guard.
+// worktrees and the clock moved past the in-use guard.
 func cleanRepo(t *testing.T, n int) (root string, wts []string) {
 	t.Helper()
 	if _, err := exec.LookPath("git"); err != nil {

@@ -68,7 +68,7 @@ func TestIsAgent(t *testing.T) {
 }
 
 // FuzzParsePorcelain: any input parses without a panic, every entry
-// has the path of a worktree line, and a rendered entry reads back.
+// has the path of a worktree line and a rendered entry reads back.
 func FuzzParsePorcelain(f *testing.F) {
 	f.Add("worktree /r\nHEAD a\nbranch refs/heads/main\n\nworktree /r/w\ndetached\nlocked why\nprunable gone\n")
 	f.Add("")

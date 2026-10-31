@@ -444,8 +444,8 @@ func printRemoved(w io.Writer, repos []*clean.Repo, t cleanTotals) {
 	fmt.Fprintf(w, "%s removed %s and %s, freed %s\n", ui.Good.Render("✓"), plural(t.Removed, "worktree"), plural(t.BranchesDel, "merged branch"), ui.Brand.Render(clean.HumanBytes(t.Freed+t.CacheFreed)))
 }
 
-// cleanTranscripts lists, and after a yes deletes, session transcripts
-// older than --older-than (90 days unless given) for this project, or
+// cleanTranscripts lists the session transcripts and deletes them after a yes:
+// those older than --older-than (90 days unless given) for this project, or
 // for every project with --all.
 func cleanTranscripts(a *app, f cleanFlags, dry bool) error {
 	age := f.older

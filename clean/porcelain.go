@@ -3,7 +3,7 @@
 
 // Package clean finds what Claude Code leaves behind on disk, git
 // worktrees from agents and workflows, old session transcripts and
-// tacet's own caches, and removes only what holds no unsaved work.
+// tacet's own caches and removes only what holds no unsaved work.
 package clean
 
 import (
@@ -64,7 +64,7 @@ func ParsePorcelain(out string) []Entry {
 
 // agentBranchPrefixes are the branch names Claude Code gives the
 // worktrees it makes: worktree-agent-<id> for agents, worktree-wf_<id>
-// for workflows, and agent-<id> in older versions.
+// for workflows and agent-<id> in older versions.
 var agentBranchPrefixes = []string{"worktree-agent-", "worktree-wf_", "agent-"}
 
 // IsAgent reports whether a worktree is one Claude Code made: it sits
