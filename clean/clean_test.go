@@ -574,3 +574,16 @@ func TestRescueFailureKeeps(t *testing.T) {
 		t.Fatalf("a failed rescue must keep the worktree: %+v", w)
 	}
 }
+
+func TestRebuildablePatterns(t *testing.T) {
+	for _, p := range []string{"node_modules", "apps/app/.next", "apps/app/dist-e2e/x.js", "dist", ".claude/settings.local.json", "a/b.tsbuildinfo", ".husky/_"} {
+		if !rebuildable.MatchString(p) {
+			t.Errorf("%s should be rebuildable", p)
+		}
+	}
+	for _, p := range []string{".env.local", "apps/app/.dev.vars", "e2e/.auth/admin-totp.txt", "apps/app/public/logo.png", "notes.md", ".claude/agents/x.md"} {
+		if rebuildable.MatchString(p) {
+			t.Errorf("%s must not be treated as rebuildable", p)
+		}
+	}
+}

@@ -21,7 +21,7 @@ const ReasonIgnored = "ignored files not in the main checkout"
 
 // rebuildable are ignored paths a build or install recreates: they never
 // keep a worktree. Matched against each path segment or the file name.
-var rebuildable = regexp.MustCompile(`(^|/)(node_modules|\.next[^/]*|dist|build|out|\.turbo|coverage|__pycache__|target|\.venv|venv|\.cache|\.vercel|\.expo|\.pytest_cache|\.mypy_cache|\.ruff_cache|\.svelte-kit|\.nuxt|storybook-static|playwright-report|test-results|blob-report|\.gradle|\.parcel-cache|\.tacet|\.husky/_)(/|$)|(\.tsbuildinfo|next-env\.d\.ts|\.log|\.DS_Store|\.lock|\.pyc)$`)
+var rebuildable = regexp.MustCompile(`(^|/)(node_modules|\.next[^/]*|dist[^/]*|build|out|\.turbo|coverage|__pycache__|target|\.venv|venv|\.cache|\.vercel|\.expo|\.pytest_cache|\.mypy_cache|\.ruff_cache|\.svelte-kit|\.nuxt|storybook-static|playwright-report|test-results|blob-report|\.gradle|\.parcel-cache|\.tacet|\.husky/_|\.claude/settings\.local\.json)(/|$)|(\.tsbuildinfo|next-env\.d\.ts|\.log|\.DS_Store|\.lock|\.pyc)$`)
 
 // maxIgnoredFiles caps how many files of one ignored folder are compared.
 const maxIgnoredFiles = 5000
