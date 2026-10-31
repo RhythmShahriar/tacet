@@ -472,8 +472,11 @@ func TestAgentLocks(t *testing.T) {
 		}
 	}
 	r.Remove()
-	if exists(dead) || !exists(live) || !exists(mine) {
-		t.Fatal("want only the worktree of the exited agent removed")
+	if !exists(live) || !exists(mine) {
+		t.Fatal("a locked worktree was removed")
+	}
+	if goneWant := runtime.GOOS != "windows"; exists(dead) == goneWant {
+		t.Fatalf("worktree of the exited agent: removed=%v, want %v", !exists(dead), goneWant)
 	}
 }
 
